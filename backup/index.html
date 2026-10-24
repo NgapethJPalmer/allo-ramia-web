@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allo Ramia - Application Intégrée</title>
+    <style>
+  
+    :root {
+        --bg-app: #F8F3F7;             /* Fond interne de l'application (Gris-violet très doux) */
+        --surface-color: #FFFFFF;      /* Fond des cartes (Blanc pur) */
+        --primary-color: #6B125C;      /* Violet / Prune principal */
+        --primary-light: #F2E6F0;      /* Fond violet clair pour les badges */
+        --accent-color: #A1197A;       /* Magenta d'action */
+        --accent-light: #FBF0F7;       
+        
+        /* COULEURS DE POLICE OPTIMISÉES */
+        --text-title: #2D122D;          /* Prune très sombre pour les titres (plus doux que du noir) */
+        --text-body: #4A3E48;           /* Gris-violet lisible et élégant pour le texte */
+        --text-muted: #7D6B7B;          /* Texte secondaire */
+        
+        --card-shadow: 0 4px 15px rgba(107, 18, 92, 0.08);
+    }
+
+  body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-app); /* Supprime le fond sombre autour */
+        color: var(--text-body);
+        margin: 0;
+        padding: 0;
+        display: block; /* Ne centre plus en mode flex */
+        min-height: 100vh;
+    }
+
+    .app-container {
+        width: 100vw;           /* Prend 100% de la largeur de l'écran */
+        max-width: 100%;        /* Supprime la limite de 440px */
+        height: 100vh;          /* Prend 100% de la hauteur de l'écran */
+        max-height: 100vh;      /* Supprime la limite de 880px */
+        background-color: var(--bg-app);
+        border-radius: 0;       /* Supprime les coins arrondis du conteneur */
+        border: none;           /* Supprime la bordure */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: none;       /* Supprime l'ombre portée */
+    }
+
+    /* EN-TÊTE : FOND VIOLET AVEC TEXTE BLANC PUR */
+    header {
+        background-color: var(--primary-color);
+        padding: 18px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #FFFFFF; /* Texte blanc clair */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .content-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .screen {
+        display: none;
+    }
+
+    .screen.active {
+        display: block;
+    }
+
+    /* TYPOGRAPHIE DU CONTENU */
+    h2, h3, h4 {
+        color: var(--text-title);
+        margin-top: 0;
+    }
+
+    p {
+        color: var(--text-body);
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        background-color: var(--surface-color);
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 16px;
+        border: 1px solid #EFE3ED;
+        box-shadow: var(--card-shadow);
+    }
+
+    .btn {
+        background-color: var(--primary-color);
+        color: #FFFFFF; /* Texte du bouton en blanc */
+        border: none;
+        padding: 14px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        margin-top: 10px;
+        box-shadow: 0 4px 12px rgba(107, 18, 92, 0.25);
+        transition: all 0.2s ease;
+    }
+
+    .btn-accent {
+        background-color: var(--accent-color);
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(161, 25, 122, 0.25);
+    }
+
+    .btn-red {
+        background-color: #EF4444;
+        color: #FFFFFF;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #EFE3ED;
+        border-radius: 12px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        color: var(--text-title);
+        background-color: #FFFFFF;
+    }
+
+    .step-row {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+        color: var(--text-body);
+    }
+
+    .step-icon {
+        margin-right: 10px;
+        color: var(--accent-color);
+        font-weight: bold;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .radio-label {
+        display: block;
+        background: #FFFFFF;
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        border: 1px solid #EFE3ED;
+        color: var(--text-title);
+        cursor: pointer;
+    }
+
+    /* BARRE DE NAVIGATION DU BAS */
+    nav.bottom-nav {
+        background-color: #FFFFFF;
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 0 8px 0;
+        border-top: 1px solid #EFE3ED;
+    }
+
+    .nav-item {
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .nav-item .icon {
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+    }
+
+    .nav-item.active {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+	/* Style pour le logo de la pharmacie de garde */
+.pharmacy-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Alignement dans le Header */
+header .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+   <header id="app-header">
+    <div class="header-content">
+        <!-- Logo SVG par défaut de pharmacie de garde (Croix Verte/Prune) -->
+        <img id="header-pharmacy-logo" src="https://img.icons8.com/color/96/pharmacy-shop.png" alt="Logo Pharmacie" class="pharmacy-logo">
+        <span id="header-title">Allo Ramia - Accueil</span>
+    </div>
+</header>
+
+    <div class="content-area">
+        
+        <!-- ÉCRAN 0 : ACCUEIL -->
+        <div id="screen-0" class="screen active">
+            <h2>Allo Ramia : Votre santé de garde, accessible en un clic.</h2>
+            <p>Développée par <strong>AfricaB2B SARL</strong> et inspirée par Mlle Sonia Edjoa, la solution révolutionne l'accès aux soins d'urgence au Cameroun (Douala, Yaoundé).</p>
+            
+            <div class="card">
+                <h3>💡 Pourquoi cette solution ?</h3>
+                <p>Trouver un médicament en urgence de nuit ou le week-end est un véritable parcours du combattant. Allo Ramia connecte instantanément les patients aux pharmacies de garde avec vérification des stocks en temps réel.</p>
+            </div>
+
+            <h3>Fonctionnalités Clés Intégrées :</h3>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>1. Géolocalisation Intelligente</strong><br><span style="color:var(--text-muted)">Trouvez les officines de garde ouvertes autour de vous.</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>2. Synchronisation API Stock & LGO</strong><br><span style="color:var(--text-muted)">Interconnexion automatisée avec les logiciels de gestion (Winpharma, LGO Pharma).</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>3. Partenariats Stratégiques & Flotte Yango</strong><br><span style="color:var(--text-muted)">Conventions Ordre des Pharmaciens & Flotte mixte (Yango Moto & Yango Taxi).</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>4. Ordonnance Numérique & Sécurisée</strong><br><span style="color:var(--text-muted)">Importation de prescription conforme aux exigences de l'Ordre.</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>5. Paiement Mobile & Logistique Sécurisée</strong><br><span style="color:var(--text-muted)">Orange Money, MTN MoMo, sachets scellés anti-fraude et pochette isotherme.</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>6. Mode Hors-Ligne & SOS / Fiches de Secours</strong><br><span style="color:var(--text-muted)">Plannings locaux synchronisés, fiches de premiers gestes et téléconsultation.</span></div></div>
+            <div class="step-row"><span class="step-icon">✔</span><div><strong>7. Rappel Traitement & Carnet Familial</strong><br><span style="color:var(--text-muted)">Suivi des prises quotidiennes et historique santé de toute la famille.</span></div></div>
+        </div>
+
+       
+     <!-- ÉCRAN 1 : RECHERCHE REAL-TIME & GÉOLOCALISATION -->
+        <div id="screen-1" class="screen">
+            <!-- Champ de recherche dynamique -->
+            <input type="text" id="search-input" placeholder="Rechercher un médicament (ex: Paracétamol, Amoxicilline...)" oninput="filterMedicines()">
+            
+            <div class="card" style="background-color: #F8FAFC; text-align: center; border: 1px dashed var(--accent-color);">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">🎙️ En urgence la nuit ? Enregistrez une note vocale :</span>
+                <button class="btn btn-accent" style="margin-top: 8px; font-size: 0.85rem;" onclick="startVoiceRecording()">🎤 Appuyer pour parler (Note Vocale 10s)</button>
+                <div id="voice-status" style="font-size: 0.8rem; color: var(--accent-color); margin-top: 5px; display: none;"></div>
+            </div>
+
+            <!-- Bloc Synchronisation API Stock -->
+            <div class="card" style="background-color: var(--accent-light); border: 1px solid var(--accent-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--accent-color);">🔄 <strong>Sync API Stock Officines (LGO) :</strong></span>
+                    <span class="badge" style="background-color: var(--accent-color); color: white;">Actif</span>
+                </div>
+                <p style="font-size: 0.75rem; margin: 4px 0 0 0; color: var(--text-secondary);">Interrogation en direct de la base de données des pharmacies.</p>
+            </div>
+
+            <button class="btn" id="geo-btn" onclick="toggleGeo()">Activer la Géolocalisation (Pharmacies Proches)</button>
+            
+            <div style="display: flex; justify-content: space-between; margin: 15px 0; align-items: center;">
+                <strong>Pharmacies de garde à proximité :</strong>
+                <!-- Ligne rétablie pour éviter le blocage JavaScript -->
+                <span id="geo-status" class="badge" style="background: #E2E8F0; color: var(--text-secondary);">En attente</span>
+            </div>
+
+            <!-- Zone d'affichage dynamique des résultats -->
+            <div id="pharmacies-list" style="color: var(--text-muted); text-align: center; margin-top: 20px;">
+                Activez la géolocalisation pour afficher la liste interactive des pharmacies de garde à Douala / Yaoundé.
+            </div>
+        </div>
+
+        <!-- ÉCRAN 2 : ORDONNANCE & VALIDATION LÉGALE -->
+        <div id="screen-2" class="screen">
+            <h2>📄 Importation d'Ordonnance</h2>
+            <p>Conformément aux réglementations pharmaceutiques, l'achat de médicaments soumis à prescription médicale nécessite l'importation de l'ordonnance originale.</p>
+            
+            <div class="card">
+                <strong>Sélectionner ou prendre en photo l'ordonnance :</strong>
+                <input type="file" id="rx-file" accept="image/*,application/pdf" style="margin-top: 10px; width: 100%;">
+                <button class="btn btn-accent" onclick="alert('Ordonnance chiffrée et transmise de manière sécurisée (End-to-End) !')">Télécharger & Sécuriser l'Ordonnance</button>
+            </div>
+
+            <div style="background-color: #FEF3C7; border: 1px solid #F59E0B; padding: 12px; border-radius: 8px; margin-top: 15px;">
+                <span style="font-size: 0.85rem; color: #B45309;">🔒 <strong>Chiffrement des données de santé :</strong> Vos données médicales sont strictement protégées et accessibles uniquement par la pharmacie validant la commande.</span>
+            </div>
+
+            <div class="card" style="margin-top: 15px; border: 1px solid #FCA5A5;">
+                <h4 style="color: #DC2626; margin: 0 0 5px 0;">Vous n'avez pas d'ordonnance ?</h4>
+                <p style="font-size: 0.8rem; margin: 0 0 8px 0; color: var(--text-secondary);">Pour les médicaments soumis à prescription, demandez une téléconsultation express avec un médecin partenaire.</p>
+                <button class="btn btn-red" style="padding: 8px; font-size: 0.8rem;" onclick="switchScreen(3, 'SOS & Téléconsultation', document.querySelectorAll('.nav-item')[3])">Obtenir une ordonnance via un Médecin de Garde</button>
+            </div>
+        </div>
+
+        <!-- ÉCRAN 3 : SOS / TÉLÉCONSULTATION -->
+        <div id="screen-3" class="screen">
+            <h2>🩺 Urgence & Téléconsultation SOS</h2>
+            <p>En cas de détresse nocturne sévère, contactez immédiatement un médecin régulateur ou initiez une téléconsultation.</p>
+            
+            <button class="btn btn-red" style="padding: 16px; margin-top: 10px;" onclick="alert('Appel d\'urgence en cours vers le service de régulation médicale 24h/24...')">📞 Appel d'Urgence SOS (24h/24)</button>
+            <button class="btn" style="padding: 16px; margin-top: 15px;" onclick="alert('Connexion à la salle de téléconsultation sécurisée...')">📹 Démarrer une Téléconsultation Médicale</button>
+
+            <div class="card" style="margin-top: 15px; background-color: #1E293B; color: white;">
+                <h4 style="color: var(--accent-light); margin-top: 0;">🚑 Numéros Directs d'Urgence Gratuits :</h4>
+                <div style="font-size: 0.85rem;">
+                    • SAMU : <strong>119</strong><br>
+                    • Sapeurs-Pompiers : <strong>118</strong><br>
+                    • Centre Hospitalier de Garde : <strong>+237 677 00 00 00</strong>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 15px;">
+                <h4 style="color: var(--primary-color); margin-top: 0;">Protocole d'urgence :</h4>
+                <p style="font-size: 0.85rem; margin-bottom: 0; color: var(--text-secondary);">L'application transmet automatiquement votre position GPS aux services d'urgence partenaires si l'option est validée.</p>
+            </div>
+        </div>
+
+        <!-- ÉCRAN 4 : PANIER, PAIEMENT & LIVRAISON -->
+        <div id="screen-4" class="screen">
+            <h3>🛒 Panier & Commande</h3>
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>Paracétamol Pédiatrique 500mg</strong><br>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Pharmacie des Palmiers • 3 500 XAF</span>
+                </div>
+                <span class="badge" style="background: var(--accent-light); color: var(--accent-color);">Stock Validé</span>
+            </div>
+
+            <h3>Mode de livraison & Flotte Partenaire :</h3>
+            <label class="radio-label"><input type="radio" name="delivery" checked> Yango Moto Nocturne (Urgence express)</label>
+            <label class="radio-label"><input type="radio" name="delivery"> Yango Taxi Berline (Gros volumes & solutés)</label>
+            <label class="radio-label"><input type="radio" name="delivery"> Click & Collect Express (Retrait en caisse)</label>
+
+            <input type="text" value="Bonamoussadi, Douala" placeholder="Adresse précise de livraison">
+
+            <div class="card" style="background-color: #F8FAFC; font-size: 0.85rem; border: 1px solid #CBD5E1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Prix du médicament :</span><span>3 500 XAF</span></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Frais de service (5%) :</span><span>175 XAF</span></div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Livraison Yango :</span><span>1 200 XAF</span></div>
+                <hr style="border-color: #CBD5E1; margin: 8px 0;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; color: var(--primary-color);"><span>Total à payer :</span><span>4 875 XAF</span></div>
+            </div>
+
+            <h3 style="margin-top: 15px;">Paiement Mobile Money :</h3>
+            <label class="radio-label"><input type="radio" name="payment" checked> Orange Money Cameroun</label>
+            <label class="radio-label"><input type="radio" name="payment"> MTN Mobile Money</label>
+
+            <button class="btn btn-accent" style="margin-top: 15px;" onclick="alert('Paiement de 4 875 XAF initié via Mobile Money ! Sachet scellé transmis à Yango.')">Confirmer et Payer (4 875 XAF)</button>
+        </div>
+
+        <!-- ÉCRAN 5 : CONSEILS & MODE HORS-LIGNE -->
+        <div id="screen-5" class="screen">
+            <div class="card" style="background-color: var(--accent-light); border: 1px solid var(--accent-color); display: flex; align-items: center;">
+                <span style="font-size: 1.5rem; margin-right: 10px;">📶</span>
+                <span style="font-size: 0.85rem; color: var(--text-main);"><strong>Mode Hors-Ligne actif :</strong> Les plannings de garde de la semaine sont synchronisés en local.</span>
+            </div>
+
+            <h3>🆘 Fiches de Premiers Secours (Offline)</h3>
+            
+            <div class="card" style="border-left: 4px solid #EF4444;">
+                <h4 style="color: #EF4444; margin: 0 0 8px 0;">🚨 Convulsions ou Fièvre Violente de Nuit</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">1. Déshabiller l'enfant.<br>2. Appliquer un linge humide sur le front.<br>3. Administrer un suppositoire de Paracétamol.</p>
+            </div>
+
+            <div class="card" style="border-left: 4px solid #F59E0B;">
+                <h4 style="color: #D97706; margin: 0 0 8px 0;">⚠️ Étouffement / Fausse Route</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Méthode de Mohnson/Back blows : 5 clapses entre les omoplates.</p>
+            </div>
+        </div>
+
+        <!-- ÉCRAN 6 : COMPTE UTILISATEUR & PARTENAIRES -->
+        <div id="screen-6" class="screen">
+            <div class="card" style="display: flex; align-items: center; background-color: var(--primary-light); border: 1px solid var(--primary-color);">
+                <div style="width: 50px; height: 50px; background-color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem; margin-right: 15px;">👤</div>
+                <div>
+                    <strong>M. James (Abonné Pass)</strong><br>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">james@alloramia.cm</span>
+                </div>
+            </div>
+
+            <div class="card" style="background-color: var(--accent-light); border: 1px solid var(--accent-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: var(--accent-color);">Allo Ramia Pass Familial</strong><br>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Livraisons gratuites & 0% de frais</span>
+                    </div>
+                    <span class="badge" style="background-color: var(--accent-color); color: white;">1 500 XAF/mois</span>
+                </div>
+            </div>
+			<div class="contact-card">
+                <h4 style="color: var(--primary-color); margin: 0 0 12px 0;">🏢 Coordonnées Officielles — Allo Ramia</h4>
+                
+                <div class="contact-item">
+                    <span class="icon">📍</span>
+                    <span><strong>Adresse :</strong> Quartier Kotto, Douala, Cameroun</span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">🏢</span>
+                    <span><strong>Bureau Fixe :</strong> <a href="tel:+237622078781" class="contact-link">+237 622 078 781</a></span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">📱</span>
+                    <span><strong>Ligne Directe :</strong> <a href="tel:+237677550909" class="contact-link">+237 677 55 09 09</a></span>
+                </div>
+
+                <div class="contact-item">
+                    <span class="icon">✉️</span>
+                    <span><strong>Email :</strong> <a href="mailto:contact@alloramia.cm" class="contact-link">contact@alloramia.cm</a></span>
+                </div>
+
+                <div class="legal-info">
+                    <strong>Édité par AfricaB2B SARL</strong><br>
+                    <strong>Registre de Commerce :</strong> RC/DLA/2018/B/1724<br>
+                    <em>Solution intégrée de pharmacie de garde</em>
+                </div>
+            </div>
+            <!-- 👆 FIN DE L'INSERTION -->
+
+            <!-- Bloc Partenariats -->
+            <div class="card" style="background-color: #F8FAFC; border-left: 4px solid var(--primary-color);">
+                <h4 style="color: var(--primary-color); margin: 0 0 6px 0;">🤝 Cadre des Partenariats</h4>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                    • <strong>Ordre National des Pharmaciens :</strong> Conventions d'affiliation.<br>
+                    • <strong>Yango Cameroun :</strong> Accord Grand Compte B2B.<br>
+                    • <strong>Intégrateurs LGO :</strong> Connecteurs API stocks.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BARRE DE NAVIGATION INFÉRIEURE -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchScreen(0, 'Allo Ramia - Accueil', this)">
+            <span class="icon">🏠</span>Accueil
+        </button>
+        <button class="nav-item" onclick="switchScreen(1, 'Recherche & Pharmacies', this)">
+            <span class="icon">💊</span>Recherche
+        </button>
+        <button class="nav-item" onclick="switchScreen(2, 'Ordonnance Numérique', this)">
+            <span class="icon">📄</span>Ordo.
+        </button>
+        <button class="nav-item" onclick="switchScreen(3, 'SOS & Téléconsultation', this)">
+            <span class="icon">🩺</span>SOS
+        </button>
+        <button class="nav-item" onclick="switchScreen(4, 'Panier & Livraison', this)">
+            <span class="icon">🛒</span>Panier
+        </button>
+        <button class="nav-item" onclick="switchScreen(5, 'Conseils & Secours', this)">
+            <span class="icon">📖</span>Conseils
+        </button>
+        <button class="nav-item" onclick="switchScreen(6, 'Mon Compte', this)">
+            <span class="icon">👤</span>Compte
+        </button>
+    </nav>
+</div>
+
+<script>
+    function switchScreen(index, title, element) {
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(s => s.classList.remove('active'));
+
+        document.getElementById('screen-' + index).classList.add('active');
+        document.getElementById('app-header').innerText = title;
+
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(n => n.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function startVoiceRecording() {
+        const status = document.getElementById('voice-status');
+        status.style.display = 'block';
+        status.innerText = "🎙️ Enregistrement en cours... Parlez (ex: 'Efferalgan pédiatrique')";
+        setTimeout(() => {
+            status.innerText = "✔ Note vocale retranscrite : 'Efferalgan pédiatrique'";
+            document.getElementById('search-input').value = "Efferalgan pédiatrique";
+        }, 2000);
+    }
+
+ // Fonction utilitaire pour calculer la distance kilométrique (Formule de Haversine)
+function calculerDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Rayon de la terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function toggleGeo() {
+    const btn = document.getElementById('geo-btn');
+    const status = document.getElementById('geo-status');
+    const list = document.getElementById('pharmacies-list');
+
+    const isActive = btn.classList.toggle('active-geo');
+
+    if (isActive) {
+        btn.style.backgroundColor = '#10B981';
+        btn.innerText = 'Recherche GPS en cours...';
+        status.innerText = 'Localisation...';
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    btn.innerText = 'Géolocalisation active (GPS Réel)';
+                    status.innerText = 'Recherche des pharmacies...';
+                    status.style.backgroundColor = '#E6F4EA';
+                    status.style.color = '#10B981';
+
+                    // Requête Overpass API pour chercher les pharmacies dans un rayon de 3000 mètres (3 km)
+                    const radius = 3000;
+                    const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node(around:${radius},${lat},${lon})[amenity=pharmacy];out;`;
+
+                    list.innerHTML = `<p style="text-align: center; color: var(--text-muted);">Interrogation d'OpenStreetMap autour de votre position...</p>`;
+
+                    fetch(overpassUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            const elements = data.elements;
+                            
+                            if (!elements || elements.length === 0) {
+                                status.innerText = 'Aucune trouvée';
+                                list.innerHTML = `<p style="text-align: center; color: #EF4444;">Aucune pharmacie trouvée dans un rayon de 3 km autour de votre position actuelle.</p>`;
+                                return;
+                            }
+
+                            // Calculer la distance et trier les pharmacies de la plus proche à la plus éloignée
+                            elements.forEach(p => {
+                                p.distance = calculerDistance(lat, lon, p.lat, p.lon);
+                            });
+                            elements.sort((a, b) => a.distance - b.distance);
+
+                            status.innerText = `${elements.length} Pharmacie(s) trouvée(s)`;
+                            list.innerHTML = ''; // Nettoyer la liste
+
+                            // Parcourir les pharmacies triées
+                            elements.forEach((pharmacy) => {
+                                const name = pharmacy.tags.name || "Pharmacie (Sans nom)";
+                                
+                                // Gestion améliorée de l'adresse (Fallback si non spécifié)
+                                let addr = pharmacy.tags['addr:street'] || 
+                                           pharmacy.tags['addr:suburb'] || 
+                                           pharmacy.tags['addr:neighbourhood'] || 
+                                           pharmacy.tags['addr:district'];
+                                if (!addr || addr.trim() === "") {
+                                    addr = `Secteur géolocalisé (GPS: ${pharmacy.lat.toFixed(3)}, ${pharmacy.lon.toFixed(3)})`;
+                                }
+
+                                // Gestion propre du numéro de téléphone (évite les doublons fictifs)
+                                const rawPhone = pharmacy.tags['phone'] || pharmacy.tags['contact:phone'] || pharmacy.tags['phone:mobile'];
+                                const phoneDisplay = rawPhone ? rawPhone : "<span style='color: var(--text-muted); font-style: italic;'>Numéro non vérifié (Officine non affiliée)</span>";
+                                const phoneAction = rawPhone ? 
+                                    `<a href="tel:${rawPhone}" class="btn btn-accent" style="flex: 1; text-align: center; text-decoration: none; padding: 8px; font-size: 0.8rem; margin: 0;">📞 Appeler</a>` : 
+                                    `<button class="btn" style="flex: 1; opacity: 0.7; padding: 8px; font-size: 0.75rem; margin: 0; background-color: var(--text-muted);" onclick="alert('Cette pharmacie n\'a pas encore renseigné sa ligne directe sur Allo Ramia. Vous pouvez utiliser l\'itinéraire GPS pour vous y rendre.')">📞 Ligne non enregistrée</button>`;
+
+                                const pLat = pharmacy.lat;
+                                const pLon = pharmacy.lon;
+                                const distFormatted = pharmacy.distance < 1 ? Math.round(pharmacy.distance * 1000) + " m" : pharmacy.distance.toFixed(1) + " km";
+
+                                // Lien Google Maps d'itinéraire
+                                const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${pLat},${pLon}`;
+
+                                // Ajout de la carte HTML
+                                list.innerHTML += `
+                                    <div class="card" style="text-align: left; margin-bottom: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                                            <strong style="color:var(--primary-color); font-size: 1rem;">💊 ${name}</strong>
+                                            <span class="badge" style="background: #E6F4EA; color: #10B981;">À ${distFormatted}</span>
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                            📍 <strong>Adresse :</strong> ${addr}
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
+                                            📞 <strong>Tél :</strong> ${phoneDisplay}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                                            ✔ Coordonnées GPS : (${pLat.toFixed(4)}, ${pLon.toFixed(4)})
+                                        </div>
+                                        <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                            ${phoneAction}
+                                            <a href="${mapsUrl}" target="_blank" class="btn" style="flex: 1; text-align: center; text-decoration: none; padding: 8px; font-size: 0.8rem; margin: 0; background-color: var(--primary-color);">🗺️ Itinéraire GPS</a>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Erreur Overpass API:', error);
+                            status.innerText = 'Erreur réseau';
+                            list.innerHTML = `<p style="color: #EF4444; text-align: center;">Impossible de charger les pharmacies en ligne. Vérifiez votre connexion.</p>`;
+                        });
+                },
+                (error) => {
+                    btn.style.backgroundColor = '#0A74DA';
+                    btn.innerText = 'Activer la Géolocalisation (Pharmacies Proches)';
+                    status.innerText = 'Erreur GPS';
+                    list.innerHTML = `<p style="color: #EF4444; text-align: center;">Veuillez autoriser la géolocalisation dans votre navigateur.</p>`;
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        } else {
+            status.innerText = 'Non supporté';
+            list.innerHTML = `<p style="color: #EF4444; text-align: center;">La géolocalisation n'est pas supportée par votre navigateur.</p>`;
+        }
+    } else {
+        btn.style.backgroundColor = '#0A74DA';
+        btn.innerText = 'Activer la Géolocalisation (Pharmacies Proches)';
+        status.innerText = 'En attente';
+        list.innerHTML = 'Activez la géolocalisation pour afficher la liste interactive des pharmacies de garde à Douala / Yaoundé.';
+    }
+}
+
+
+</script>
+</body>
+</html>
