@@ -766,24 +766,39 @@
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
         const query = `[out:json];node(around:${radius},${lat},${lng})[amenity=pharmacy];out;`;
-        const url = `https://overpass-api.de/api/interpreter?data=` + encodeURIComponent(query);
+        
+        // Miroir Overpass principal ultra-rapide avec système de secours (fallback)
+        const mirrors = [
+          `https://overpass.kumi.systems/api/interpreter?data=`,
+          `https://z.overpass-api.de/api/interpreter?data=`
+        ];
 
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-          
-          this.isLoadingPharmacies = false;
-          if (data && data.elements && data.elements.length > 0) {
-            this.parsePharmacies(data.elements, lat, lng);
-          } else if (radius === 5000) {
-            await this.fetchRealPharmaciesOSM(10000);
-          } else {
-            this.realPharmacies = [];
-            this.updateMapAndCards();
+        let data = null;
+        for (let mirrorUrl of mirrors) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000); // Timeout de 12s
+
+            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              data = await response.json();
+              break; // Succès, on sort de la boucle
+            }
+          } catch (err) {
+            console.warn("Échec du miroir Overpass, essai suivant...", err);
           }
-        } catch (e) {
-          console.error("Erreur Overpass API", e);
-          this.isLoadingPharmacies = false;
+        }
+
+        this.isLoadingPharmacies = false;
+
+        if (data && data.elements && data.elements.length > 0) {
+          this.parsePharmacies(data.elements, lat, lng);
+        } else if (radius === 5000) {
+          // Si rien trouvé à 5km, on élargit automatiquement à 10km
+          await this.fetchRealPharmaciesOSM(10000);
+        } else {
           this.realPharmacies = [];
           this.updateMapAndCards();
         }
