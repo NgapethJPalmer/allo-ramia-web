@@ -134,10 +134,11 @@
         this.userMarker = null;
         this.currentLocation = { lat: 3.8480, lng: 11.5021 };
         this.realPharmacies = [];
-        this.searchRadius = 5000; // Rayon initial de 5 km
+        this.searchRadius = 5000;
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
-        this.activeSearchController = null; // Contrôleur pour stopper la recherche
+        this.activeSearchController = null;
+        this.searchDuration = null; // Chronomètre de recherche GPS
 
         this.countryData = {
           'CM': { 
@@ -201,16 +202,6 @@
         };
 
         this.cart = [];
-
-        this.recipientInfo = {
-          isForSelf: false,
-          recipientName: "",
-          phonePrefix: "+237",
-          recipientPhone: "",
-          deliveryAddress: "Livraison locale",
-          deliveryMode: "DELIVERY",
-          generatedPin: null
-        };
       }
 
       init() {
@@ -245,7 +236,7 @@
                   }
                 }
               } catch (e) {
-                console.log("Géocodage inverse indisponible, utilisation des coordonnées GPS pures.");
+                console.log("Géocodage inverse indisponible.");
               }
 
               this.renderCityDropdown();
@@ -265,7 +256,6 @@
         this.currentCountry = code;
         const countryInfo = this.countryData[code];
         if (countryInfo) {
-          this.recipientInfo.phonePrefix = countryInfo.phonePrefix;
           const firstCity = Object.keys(countryInfo.cities)[0];
           this.currentCity = firstCity;
           this.currentLocation = countryInfo.cities[firstCity];
@@ -292,7 +282,6 @@
         if (!this.currentCountry) {
           citySelect.disabled = true;
           citySelect.innerHTML = `<option value="">Veuillez d'abord choisir un pays</option>`;
-          citySelect.className = "bg-slate-200 text-slate-400 font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-not-allowed";
         } else {
           citySelect.disabled = false;
           const countryInfo = this.countryData[this.currentCountry];
@@ -362,8 +351,7 @@
                       <span>Rechercher</span>
                     </button>
 
-                    <!-- BOUTON STOP / ANNULER DE SECOURS -->
-                    <button id="stop-btn" onclick="window.app.cancelSearch()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow flex items-center justify-center space-x-1" title="Annuler la recherche en cours">
+                    <button id="stop-btn" onclick="window.app.cancelSearch()" class="bg-[#6B125C] hover:bg-[#851264] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow flex items-center justify-center space-x-1" title="Annuler la recherche en cours">
                       <i class="fa-solid fa-xmark text-sm"></i>
                       <span>Stop</span>
                     </button>
@@ -414,7 +402,10 @@
             <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm mt-8">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-800 text-base">Pharmacies détectées (de la plus proche à la plus éloignée)</h3>
-                <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
+                <div class="flex items-center gap-2">
+                  ${this.searchDuration !== null ? `<span class="px-3 py-1 bg-purple-50 text-[#6B125C] font-semibold text-xs rounded-full border border-purple-200">⏱️ ${this.searchDuration}s</span>` : ''}
+                  <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
+                </div>
               </div>
               <div id="pharmacies-grid" class="space-y-4">
               </div>
@@ -487,6 +478,7 @@
           this.activeSearchController = null;
         }
         this.isLoadingPharmacies = false;
+        this.searchDuration = null;
         this.resetSearchButtons();
 
         const gridHome = document.getElementById('pharmacies-grid');
@@ -521,8 +513,11 @@
         }
         this.activeSearchController = new AbortController();
 
+        const startTime = performance.now(); // Démarrage du chronomètre de performance
+
         this.searchRadius = radius;
         this.isLoadingPharmacies = true;
+        this.searchDuration = null;
         this.updateMapAndCards();
 
         const lat = this.currentLocation.lat;
@@ -556,11 +551,12 @@
         this.isLoadingPharmacies = false;
 
         if (data && data.elements && data.elements.length > 0) {
+          this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2); // Calcul du temps écoulé en secondes
           this.parsePharmacies(data.elements, lat, lng);
         } else if (radius === 5000) {
-          // Si rien n'est trouvé dans les 5 km, élargissement automatique à 10 km
           await this.fetchRealPharmaciesOSM(10000);
         } else {
+          this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2);
           this.realPharmacies = [];
           this.updateMapAndCards();
         }
@@ -573,14 +569,15 @@
           const tags = el.tags || {};
           const name = tags.name ? tags.name : "Pharmacie (Nom non renseigné)";
           
-          // Récupération stricte des vrais numéros, e-mails et sites de la base OpenStreetMap
           const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || tags['contact:mobile'] || null;
           const email = tags.email || tags['contact:email'] || null;
           const website = tags.website || tags['contact:website'] || null;
 
           const street = tags['addr:street'] || "";
           const housenumber = tags['addr:housenumber'] ? `N° ${tags['addr:housenumber']}` : "";
-          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || this.currentDistrict || "";
+          
+          // CORRECTION : Utilisation stricte des données OpenStreetMap sans injecter le quartier saisi par l'utilisateur
+          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || "";
           const city = tags['addr:city'] || cityName;
 
           let addressParts = [street, housenumber, suburb, city].filter(Boolean);
@@ -589,7 +586,6 @@
           const elLat = el.lat || (el.center ? el.center.lat : lat);
           const elLon = el.lon || (el.center ? el.center.lon : lng);
 
-          // Calcul de la distance réelle
           const R = 6371;
           const dLat = (elLat - lat) * Math.PI / 180;
           const dLon = (elLon - lng) * Math.PI / 180;
@@ -600,7 +596,7 @@
           const distance = R * c;
 
           return { id: el.id, name, phone, email, website, address: fullAddress, lat: elLat, lng: elLon, distance };
-        }).sort((a, b) => a.distance - b.distance); // Tri par proximité de livraison
+        }).sort((a, b) => a.distance - b.distance);
 
         this.initMap();
         this.updateMapAndCards();
@@ -672,7 +668,6 @@
                       <strong class="text-slate-700"><i class="fa-solid fa-location-dot text-pink-700 mr-1"></i>Adresse :</strong> ${p.address}
                     </p>
 
-                    <!-- Informations réelles extraites d'OpenStreetMap -->
                     <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 pt-1">
                       <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
                       <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
@@ -731,21 +726,10 @@
         `;
       }
 
-      renderOrdoView() {
-        return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance</h2></div>`;
-      }
-
-      renderSosView() {
-        return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`;
-      }
-
-      renderConseilsView() {
-        return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`;
-      }
-
-      renderCompteView() {
-        return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Mon Profil</h2></div>`;
-      }
+      renderOrdoView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance</h2></div>`; }
+      renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
+      renderConseilsView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`; }
+      renderCompteView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Mon Profil</h2></div>`; }
 
       updateCartBadge() {
         const badge = document.getElementById('cart-badge-count');
@@ -762,4 +746,3 @@
   </script>
 </body>
 </html>
-
