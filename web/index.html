@@ -138,7 +138,7 @@
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
         this.activeSearchController = null;
-        this.searchDuration = "0.00"; // Chronomètre initialisé
+        this.searchDuration = "0.00";
 
         this.countryData = {
           'CM': { 
@@ -478,7 +478,12 @@
           this.activeSearchController = null;
         }
         this.isLoadingPharmacies = false;
+        
+        // Remise à zéro immédiate du compteur à 0.00s
         this.searchDuration = "0.00";
+        const timerEl = document.getElementById('timer-display');
+        if (timerEl) timerEl.textContent = "0.00";
+
         this.resetSearchButtons();
 
         const gridHome = document.getElementById('pharmacies-grid');
@@ -513,24 +518,27 @@
         }
         this.activeSearchController = new AbortController();
 
-        const startTime = performance.now(); // Démarrage immédiat du chronomètre
+        const startTime = performance.now();
         this.searchRadius = radius;
         this.isLoadingPharmacies = true;
         this.updateMapAndCards();
 
-        // Intervalle pour mettre à jour le compteur en direct pendant le chargement
+        // Compteur en direct mis à jour toutes les 50ms
         const timerInterval = setInterval(() => {
+          if (!this.isLoadingPharmacies) {
+            clearInterval(timerInterval);
+            return;
+          }
           const currentElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
           const timerEl = document.getElementById('timer-display');
           if (timerEl) timerEl.textContent = currentElapsed;
-        }, 100);
+        }, 50);
 
-        const query = `[out:json][timeout:12];(node(around:${radius},${latLngToQuery(this.currentLocation)})[amenity=pharmacy];way(around:${radius},${latLngToQuery(this.currentLocation)})[amenity=pharmacy];);out center;`;
-        
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
-        const overpassQuery = `[out:json][timeout:12];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center;`;
-
+        
+        const query = `[out:json][timeout:6];node(around:${radius},${lat},${lng})[amenity=pharmacy];out body;`;
+        
         const mirrors = [
           `https://overpass-api.de/api/interpreter?data=`,
           `https://overpass.kumi.systems/api/interpreter?data=`
@@ -539,7 +547,7 @@
         let data = null;
         for (let mirrorUrl of mirrors) {
           try {
-            const response = await fetch(mirrorUrl + encodeURIComponent(overpassQuery), { signal: this.activeSearchController.signal });
+            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: this.activeSearchController.signal });
 
             if (response.ok) {
               data = await response.json();
@@ -548,7 +556,6 @@
           } catch (err) {
             if (err.name === 'AbortError') {
               clearInterval(timerInterval);
-              console.log("Requête annulée par l'utilisateur.");
               return;
             }
           }
@@ -556,13 +563,20 @@
 
         clearInterval(timerInterval);
         this.isLoadingPharmacies = false;
-        this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2);
+        const finalTime = ((performance.now() - startTime) / 1000).toFixed(2);
 
         if (data && data.elements && data.elements.length > 0) {
+          this.searchDuration = finalTime;
+          const timerEl = document.getElementById('timer-display');
+          if (timerEl) timerEl.textContent = finalTime;
           this.parsePharmacies(data.elements, lat, lng);
         } else if (radius === 5000) {
           await this.fetchRealPharmaciesOSM(10000);
         } else {
+          // Si aucune pharmacie n'est trouvée après 10km, réinitialisation du compteur à 0.00s
+          this.searchDuration = "0.00";
+          const timerEl = document.getElementById('timer-display');
+          if (timerEl) timerEl.textContent = "0.00";
           this.realPharmacies = [];
           this.updateMapAndCards();
         }
@@ -584,12 +598,11 @@
           const suburb = tags['addr:suburb'] || tags['addr:quarter'] || "";
           const city = tags['addr:city'] || cityName;
 
-          // Construction rigoureuse de l'adresse avec les informations réelles (ou "Non enregistré")
           let addressParts = [street, housenumber, suburb, city].filter(Boolean);
           let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : "Adresse non enregistrée";
 
-          const elLat = el.lat || (el.center ? el.center.lat : lat);
-          const elLon = el.lon || (el.center ? el.center.lon : lng);
+          const elLat = el.lat;
+          const elLon = el.lon;
 
           const R = 6371;
           const dLat = (elLat - lat) * Math.PI / 180;
