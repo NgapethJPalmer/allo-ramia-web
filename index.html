@@ -138,7 +138,7 @@
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
         this.activeSearchController = null;
-        this.searchDuration = null; // Chronomètre de recherche GPS
+        this.searchDuration = "0.00"; // Chronomètre initialisé
 
         this.countryData = {
           'CM': { 
@@ -403,7 +403,7 @@
               <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-slate-800 text-base">Pharmacies détectées (de la plus proche à la plus éloignée)</h3>
                 <div class="flex items-center gap-2">
-                  ${this.searchDuration !== null ? `<span class="px-3 py-1 bg-purple-50 text-[#6B125C] font-semibold text-xs rounded-full border border-purple-200">⏱️ ${this.searchDuration}s</span>` : ''}
+                  <span class="px-3 py-1 bg-purple-50 text-[#6B125C] font-semibold text-xs rounded-full border border-purple-200">⏱️ <span id="timer-display">${this.searchDuration}</span>s</span>
                   <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
                 </div>
               </div>
@@ -478,7 +478,7 @@
           this.activeSearchController = null;
         }
         this.isLoadingPharmacies = false;
-        this.searchDuration = null;
+        this.searchDuration = "0.00";
         this.resetSearchButtons();
 
         const gridHome = document.getElementById('pharmacies-grid');
@@ -513,18 +513,24 @@
         }
         this.activeSearchController = new AbortController();
 
-        const startTime = performance.now(); // Démarrage du chronomètre de performance
-
+        const startTime = performance.now(); // Démarrage immédiat du chronomètre
         this.searchRadius = radius;
         this.isLoadingPharmacies = true;
-        this.searchDuration = null;
         this.updateMapAndCards();
 
+        // Intervalle pour mettre à jour le compteur en direct pendant le chargement
+        const timerInterval = setInterval(() => {
+          const currentElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+          const timerEl = document.getElementById('timer-display');
+          if (timerEl) timerEl.textContent = currentElapsed;
+        }, 100);
+
+        const query = `[out:json][timeout:12];(node(around:${radius},${latLngToQuery(this.currentLocation)})[amenity=pharmacy];way(around:${radius},${latLngToQuery(this.currentLocation)})[amenity=pharmacy];);out center;`;
+        
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
-        
-        const query = `[out:json][timeout:12];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center;`;
-        
+        const overpassQuery = `[out:json][timeout:12];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center;`;
+
         const mirrors = [
           `https://overpass-api.de/api/interpreter?data=`,
           `https://overpass.kumi.systems/api/interpreter?data=`
@@ -533,7 +539,7 @@
         let data = null;
         for (let mirrorUrl of mirrors) {
           try {
-            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: this.activeSearchController.signal });
+            const response = await fetch(mirrorUrl + encodeURIComponent(overpassQuery), { signal: this.activeSearchController.signal });
 
             if (response.ok) {
               data = await response.json();
@@ -541,22 +547,22 @@
             }
           } catch (err) {
             if (err.name === 'AbortError') {
+              clearInterval(timerInterval);
               console.log("Requête annulée par l'utilisateur.");
               return;
             }
-            console.warn("Miroir indisponible, tentative sur le suivant...", err);
           }
         }
 
+        clearInterval(timerInterval);
         this.isLoadingPharmacies = false;
+        this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2);
 
         if (data && data.elements && data.elements.length > 0) {
-          this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2); // Calcul du temps écoulé en secondes
           this.parsePharmacies(data.elements, lat, lng);
         } else if (radius === 5000) {
           await this.fetchRealPharmaciesOSM(10000);
         } else {
-          this.searchDuration = ((performance.now() - startTime) / 1000).toFixed(2);
           this.realPharmacies = [];
           this.updateMapAndCards();
         }
@@ -567,7 +573,7 @@
         
         this.realPharmacies = elements.map(el => {
           const tags = el.tags || {};
-          const name = tags.name ? tags.name : "Pharmacie (Nom non renseigné)";
+          const name = tags.name ? tags.name : "Nom non enregistré";
           
           const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || tags['contact:mobile'] || null;
           const email = tags.email || tags['contact:email'] || null;
@@ -575,13 +581,12 @@
 
           const street = tags['addr:street'] || "";
           const housenumber = tags['addr:housenumber'] ? `N° ${tags['addr:housenumber']}` : "";
-          
-          // CORRECTION : Utilisation stricte des données OpenStreetMap sans injecter le quartier saisi par l'utilisateur
           const suburb = tags['addr:suburb'] || tags['addr:quarter'] || "";
           const city = tags['addr:city'] || cityName;
 
+          // Construction rigoureuse de l'adresse avec les informations réelles (ou "Non enregistré")
           let addressParts = [street, housenumber, suburb, city].filter(Boolean);
-          let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : `${cityName}`;
+          let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : "Adresse non enregistrée";
 
           const elLat = el.lat || (el.center ? el.center.lat : lat);
           const elLon = el.lon || (el.center ? el.center.lon : lng);
@@ -669,9 +674,9 @@
                     </p>
 
                     <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 pt-1">
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-globe text-xs mr-1"></i>Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-globe text-xs mr-1"></i>Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
                     </div>
                   </div>
 
@@ -689,7 +694,7 @@
                   ` : `
                     <button disabled class="w-full bg-slate-100 text-slate-400 font-medium py-2 rounded-xl text-xs text-center flex items-center justify-center space-x-1 cursor-not-allowed opacity-75">
                       <i class="fa-solid fa-phone-slash text-xs"></i>
-                      <span>Numéro indisponible</span>
+                      <span>Non enregistré</span>
                     </button>
                   `}
 
