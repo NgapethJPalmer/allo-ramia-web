@@ -48,8 +48,7 @@
 
       <div class="flex items-center space-x-2">
         <select id="country-selector" onchange="window.app.changeCountry(this.value)" class="bg-[#851264] text-white text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-pink-400/30 focus:outline-none cursor-pointer">
-          <option value="" disabled selected>-- Choisir le pays --</option>
-          <option value="CM">🇨🇲 Cameroun</option>
+          <option value="CM" selected>🇨🇲 Cameroun</option>
           <option value="CI">🇨🇮 Côte d'Ivoire</option>
           <option value="GH">🇬🇭 Ghana</option>
           <option value="GQ">🇬🇶 Guinée Équatoriale</option>
@@ -135,16 +134,16 @@
         this.userMarker = null;
         this.currentLocation = { lat: 3.8480, lng: 11.5021 };
         this.realPharmacies = [];
-        this.searchRadius = 5000;
+        this.searchRadius = 5000; // Rayon initial de 5 km
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
-        this.hasSearched = false;
+        this.activeSearchController = null; // Contrôleur pour stopper la recherche
 
         this.countryData = {
           'CM': { 
             name: 'Cameroun', currency: 'XAF', phonePrefix: '+237',
             cities: { 
-              'Douala': { lat: 4.0511, lng: 9.7679 }, 'Yaoundé': { lat: 3.8480, lng: 11.5021 }, 
+              'Yaoundé': { lat: 3.8480, lng: 11.5021 }, 'Douala': { lat: 4.0511, lng: 9.7679 }, 
               'Bafoussam': { lat: 5.4778, lng: 10.4176 }, 'Garoua': { lat: 9.3011, lng: 13.3977 },
               'Maroua': { lat: 10.5910, lng: 14.3159 }, 'Bamenda': { lat: 5.9631, lng: 10.1591 },
               'Buea': { lat: 4.1550, lng: 9.2435 }, 'Limbe': { lat: 4.0244, lng: 9.2149 },
@@ -156,79 +155,48 @@
             name: 'Côte d\'Ivoire', currency: 'FCFA', phonePrefix: '+225',
             cities: { 
               'Abidjan': { lat: 5.3600, lng: -4.0083 }, 'Bouaké': { lat: 7.6938, lng: -5.0303 },
-              'Yamoussoukro': { lat: 6.8276, lng: -5.2893 }, 'San-Pédro': { lat: 4.7485, lng: -6.6363 },
-              'Korhogo': { lat: 9.4580, lng: -5.6296 }, 'Daloa': { lat: 6.8774, lng: -6.4502 }
+              'Yamoussoukro': { lat: 6.8276, lng: -5.2893 }, 'San-Pédro': { lat: 4.7485, lng: -6.6363 }
             }
           },
           'GH': {
             name: 'Ghana', currency: 'GHS', phonePrefix: '+233',
-            cities: {
-              'Accra': { lat: 5.6037, lng: -0.1870 }, 'Kumasi': { lat: 6.6885, lng: -1.6244 },
-              'Tamale': { lat: 9.4008, lng: -0.8393 }, 'Sekondi-Takoradi': { lat: 4.9016, lng: -1.7831 }
-            }
+            cities: { 'Accra': { lat: 5.6037, lng: -0.1870 }, 'Kumasi': { lat: 6.6885, lng: -1.6244 } }
           },
           'GQ': {
             name: 'Guinée Équatoriale', currency: 'XAF', phonePrefix: '+240',
-            cities: {
-              'Malabo': { lat: 3.7504, lng: 8.7371 }, 'Bata': { lat: 1.8639, lng: 9.7658 },
-              'Ebebiyín': { lat: 2.1511, lng: 11.3353 }
-            }
+            cities: { 'Malabo': { lat: 3.7504, lng: 8.7371 }, 'Bata': { lat: 1.8639, lng: 9.7658 } }
           },
           'NG': {
             name: 'Nigeria', currency: 'NGN', phonePrefix: '+234',
-            cities: {
-              'Lagos': { lat: 6.5244, lng: 3.3792 }, 'Abuja': { lat: 9.0765, lng: 7.3986 },
-              'Port Harcourt': { lat: 4.8156, lng: 7.0498 }, 'Kano': { lat: 12.0022, lng: 8.5919 }
-            }
+            cities: { 'Lagos': { lat: 6.5244, lng: 3.3792 }, 'Abuja': { lat: 9.0765, lng: 7.3986 } }
           },
           'BJ': { 
             name: 'Bénin', currency: 'FCFA', phonePrefix: '+229',
-            cities: { 
-              'Cotonou': { lat: 6.3654, lng: 2.4183 }, 'Porto-Novo': { lat: 6.4969, lng: 2.6288 },
-              'Parakou': { lat: 9.3371, lng: 2.6303 }, 'Abomey-Calavi': { lat: 6.4485, lng: 2.3557 }
-            }
+            cities: { 'Cotonou': { lat: 6.3654, lng: 2.4183 }, 'Porto-Novo': { lat: 6.4969, lng: 2.6288 } }
           },
           'CG': { 
             name: 'Congo (Brazzaville)', currency: 'XAF', phonePrefix: '+242',
-            cities: { 
-              'Brazzaville': { lat: -4.2634, lng: 15.2429 }, 'Pointe-Noire': { lat: -4.7692, lng: 11.8664 },
-              'Dolisie': { lat: -4.1983, lng: 12.6656 }
-            }
+            cities: { 'Brazzaville': { lat: -4.2634, lng: 15.2429 }, 'Pointe-Noire': { lat: -4.7692, lng: 11.8664 } }
           },
           'CD': {
             name: 'RDC (Kinshasa)', currency: 'CDF', phonePrefix: '+243',
-            cities: {
-              'Kinshasa': { lat: -4.4419, lng: 15.2663 }, 'Lubumbashi': { lat: -11.6874, lng: 27.4847 },
-              'Goma': { lat: -1.6585, lng: 29.2230 }, 'Kisangani': { lat: 0.5153, lng: 25.1909 }
-            }
+            cities: { 'Kinshasa': { lat: -4.4419, lng: 15.2663 }, 'Lubumbashi': { lat: -11.6874, lng: 27.4847 } }
           },
           'GA': { 
             name: 'Gabon', currency: 'XAF', phonePrefix: '+241',
-            cities: { 
-              'Libreville': { lat: 0.3901, lng: 9.4544 }, 'Port-Gentil': { lat: -0.7193, lng: 8.7815 },
-              'Franceville': { lat: -1.6333, lng: 13.5833 }
-            }
+            cities: { 'Libreville': { lat: 0.3901, lng: 9.4544 }, 'Port-Gentil': { lat: -0.7193, lng: 8.7815 } }
           },
           'CF': {
             name: 'Centrafrique (RCA)', currency: 'XAF', phonePrefix: '+236',
-            cities: {
-              'Bangui': { lat: 4.3947, lng: 18.5582 }, 'Bimbo': { lat: 4.2567, lng: 18.5273 },
-              'Berbérati': { lat: 4.2612, lng: 15.7922 }
-            }
+            cities: { 'Bangui': { lat: 4.3947, lng: 18.5582 } }
           },
           'TD': { 
             name: 'Tchad', currency: 'XAF', phonePrefix: '+235',
-            cities: { 
-              'N\'Djamena': { lat: 12.1348, lng: 15.0557 }, 'Moundou': { lat: 8.5667, lng: 16.0833 },
-              'Sarh': { lat: 9.1500, lng: 18.3833 }
-            }
+            cities: { 'N\'Djamena': { lat: 12.1348, lng: 15.0557 } }
           },
           'SN': {
             name: 'Sénégal', currency: 'FCFA', phonePrefix: '+221',
-            cities: {
-              'Dakar': { lat: 14.7167, lng: -17.4677 }, 'Thiès': { lat: 14.7833, lng: -16.9333 },
-              'Saint-Louis': { lat: 16.0179, lng: -16.4896 }
-            }
+            cities: { 'Dakar': { lat: 14.7167, lng: -17.4677 } }
           }
         };
 
@@ -239,7 +207,7 @@
           recipientName: "",
           phonePrefix: "+237",
           recipientPhone: "",
-          deliveryAddress: "Bonamoussadi, Rue Kotto",
+          deliveryAddress: "Livraison locale",
           deliveryMode: "DELIVERY",
           generatedPin: null
         };
@@ -248,6 +216,49 @@
       init() {
         this.navigateTo('home');
         this.updateCartBadge();
+        this.autoDetectUserLocation();
+      }
+
+      autoDetectUserLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              this.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+              try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                const data = await res.json();
+                if (data && data.address) {
+                  const countryCode = (data.address.country_code || '').toUpperCase();
+                  const detectedCity = data.address.city || data.address.town || data.address.village || data.address.county || '';
+
+                  if (this.countryData[countryCode]) {
+                    this.currentCountry = countryCode;
+                    const countrySelect = document.getElementById('country-selector');
+                    if (countrySelect) countrySelect.value = countryCode;
+                  }
+
+                  if (detectedCity) {
+                    this.currentCity = detectedCity;
+                    if (!this.countryData[this.currentCountry].cities[detectedCity]) {
+                      this.countryData[this.currentCountry].cities[detectedCity] = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log("Géocodage inverse indisponible, utilisation des coordonnées GPS pures.");
+              }
+
+              this.renderCityDropdown();
+              this.fetchRealPharmaciesOSM(5000);
+            },
+            () => {
+              this.fetchRealPharmaciesOSM(5000);
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        } else {
+          this.fetchRealPharmaciesOSM(5000);
+        }
       }
 
       changeCountry(code) {
@@ -260,6 +271,7 @@
           this.currentLocation = countryInfo.cities[firstCity];
 
           this.renderCityDropdown();
+          this.fetchRealPharmaciesOSM(5000);
         }
       }
 
@@ -269,6 +281,7 @@
         const cityCoords = this.countryData[this.currentCountry].cities[cityName];
         if (cityCoords) {
           this.currentLocation = cityCoords;
+          this.fetchRealPharmaciesOSM(5000);
         }
       }
 
@@ -299,11 +312,9 @@
         ['home', 'ordo', 'sos', 'panier', 'conseils', 'compte'].forEach(v => {
           const btn = document.getElementById(`nav-btn-${v}`);
           if (btn) {
-            if (v === view) {
-              btn.className = "flex flex-col items-center py-1 px-3 text-[#6B125C] font-bold transition";
-            } else {
-              btn.className = "flex flex-col items-center py-1 px-3 text-slate-400 hover:text-[#6B125C] font-medium transition";
-            }
+            btn.className = v === view 
+              ? "flex flex-col items-center py-1 px-3 text-[#6B125C] font-bold transition" 
+              : "flex flex-col items-center py-1 px-3 text-slate-400 hover:text-[#6B125C] font-medium transition";
           }
         });
 
@@ -318,7 +329,7 @@
             }
             this.initMap();
             this.renderCityDropdown();
-            this.updateMapAndCards();
+            this.fetchRealPharmaciesOSM(5000);
           }, 100);
         } else if (view === 'ordo') {
           container.innerHTML = this.renderOrdoView();
@@ -337,25 +348,32 @@
         return `
           <div class="space-y-8">
             <div class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] rounded-2xl p-6 sm:p-8 text-white shadow-xl space-y-4">
-              <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">📍 Géolocalisation GPS & Pharmacies de Garde</span>
+              <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">📍 Géolocalisation Réelle GPS (Rayon adaptatif : 5 km à 10 km)</span>
               <h2 class="text-2xl sm:text-3xl font-extrabold mb-1">Trouvez vos médicaments à proximité.</h2>
-              <p class="text-sm text-pink-100 mb-4">Commandez localement ou pour un proche à distance avec suivi en temps réel.</p>
+              <p class="text-sm text-pink-100 mb-4">Pharmacies identifiées depuis le point de livraison et classées par proximité.</p>
               
               <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md space-y-3">
                 <div class="flex flex-col sm:flex-row gap-2">
-                  <input type="text" id="search-input" value="${this.searchedMedicine}" placeholder="Saisir le nom du ou des médicaments..." class="flex-1 px-4 py-2.5 text-xs text-slate-800 bg-white rounded-xl focus:outline-none">
+                  <input type="text" id="search-input" value="${this.searchedMedicine}" placeholder="Saisir le nom du médicament (optionnel)..." class="flex-1 px-4 py-2.5 text-xs text-slate-800 bg-white rounded-xl focus:outline-none">
                   
-                  <button id="search-btn" onclick="window.app.performSearch()" class="bg-white text-[#6B125C] px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-pink-50 transition shadow flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>Rechercher</span>
-                  </button>
+                  <div class="flex gap-2">
+                    <button id="search-btn" onclick="window.app.performSearch()" class="flex-1 sm:flex-none bg-white text-[#6B125C] px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-pink-50 transition shadow flex items-center justify-center space-x-2">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                      <span>Rechercher</span>
+                    </button>
+
+                    <!-- BOUTON STOP / ANNULER DE SECOURS -->
+                  <button id="stop-btn" onclick="window.app.cancelSearch()" class="bg-[#6B125C] hover:bg-[#851264] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow flex items-center justify-center space-x-1" title="Annuler la recherche en cours">
+  <i class="fa-solid fa-xmark text-sm"></i>
+  <span>Stop</span>
+</button>
+                  </div>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
                   <div class="flex items-center space-x-2">
-                    <span class="text-pink-100 font-semibold shrink-0">Ville active :</span>
+                    <span class="text-pink-100 font-semibold shrink-0">Ville :</span>
                     <select id="active-city-select" onchange="window.app.changeCity(this.value)" class="bg-white text-[#6B125C] font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer flex-1">
-                      <!-- Généré dynamiquement -->
                     </select>
                   </div>
                   <div class="flex items-center space-x-2">
@@ -369,9 +387,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               <div class="lg:col-span-2 bg-white rounded-2xl border border-brand-border p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="font-bold text-slate-800 text-sm">Carte des Officines Autour de Votre Destination</h3>
+                  <h3 class="font-bold text-slate-800 text-sm">Carte des Officines Autour de Votre Point de Livraison</h3>
                   <button onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-semibold transition">
-                    <i class="fa-solid fa-crosshairs mr-1"></i> Centrer GPS
+                    <i class="fa-solid fa-crosshairs mr-1"></i> Ma Position GPS
                   </button>
                 </div>
                 <div id="osm-map" class="w-full h-80 rounded-xl border border-slate-200 z-10"></div>
@@ -384,7 +402,7 @@
                     <span class="text-[10px] bg-red-800 px-2 py-0.5 rounded-full font-mono">DIRECT</span>
                   </div>
                   <p class="text-xs text-red-100 leading-relaxed">
-                    Besoin d'aide immédiate pour trouver un médicament urgent ou une officine ouverte ?
+                    Besoin d'assistance immédiate pour localiser un médicament vital ou une officine de garde ?
                   </p>
                 </div>
                 <a href="tel:+237677550909" class="w-full bg-white text-red-700 font-bold py-3 rounded-xl text-xs shadow hover:bg-red-50 transition block text-center">
@@ -395,293 +413,11 @@
 
             <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm mt-8">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-800 text-base">Pharmacies détectées autour de vous</h3>
+                <h3 class="font-bold text-slate-800 text-base">Pharmacies détectées (de la plus proche à la plus éloignée)</h3>
                 <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
               </div>
               <div id="pharmacies-grid" class="space-y-4">
-                <p class="text-xs text-slate-500 italic">Veuillez sélectionner le Pays, la Ville, renseigner un Quartier (optionnel) et cliquer sur "Rechercher" pour localiser les pharmacies.</p>
               </div>
-            </div>
-          </div>
-        `;
-      }
-
-      renderPanierView() {
-        const country = this.currentCountry ? this.countryData[this.currentCountry] : { currency: 'XAF' };
-        
-        let subtotal = 0;
-        const cartItemsHtml = this.cart.map((item, index) => {
-          subtotal += item.price * item.qty;
-          return `
-            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50">
-              <div>
-                <strong class="text-xs text-slate-800">${item.name}</strong>
-                <p class="text-[11px] text-slate-500">${item.price} ${country.currency} x ${item.qty}</p>
-              </div>
-              <div class="flex items-center space-x-3">
-                <span class="font-bold text-xs text-[#6B125C]">${item.price * item.qty} ${country.currency}</span>
-                <button onclick="window.app.removeFromCart(${index})" class="text-red-500 hover:text-red-700 text-xs px-2.5 py-1.5 bg-white border border-red-200 rounded-lg shadow-sm" title="Supprimer cet article"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        const serviceFee = subtotal > 0 ? Math.round(subtotal * 0.05) : 0;
-        const deliveryFee = (subtotal > 0 && this.recipientInfo.deliveryMode === 'DELIVERY') ? 1200 : 0;
-        const total = subtotal + serviceFee + deliveryFee;
-
-        const prefixOptions = Object.keys(this.countryData).map(code => {
-          const c = this.countryData[code];
-          return `<option value="${c.phonePrefix}" ${this.recipientInfo.phonePrefix === c.phonePrefix ? 'selected' : ''}>${c.name} (${c.phonePrefix})</option>`;
-        }).join('');
-
-        return `
-          <div class="space-y-6 pb-12">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-              <h2 class="text-lg font-bold text-[#6B125C] flex items-center justify-between">
-                <span>Panier Multi-Médicaments</span>
-                <span class="text-xs font-semibold bg-pink-100 text-[#6B125C] px-3 py-1 rounded-full">${this.cart.length} Produit(s)</span>
-              </h2>
-              <div class="space-y-2">
-                ${cartItemsHtml || '<p class="text-xs text-slate-400 italic">Votre panier est vide. Veuillez rechercher et ajouter un médicament depuis l\'accueil.</p>'}
-              </div>
-            </div>
-
-            ${this.cart.length > 0 ? `
-              <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-                <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-location-dot text-[#6B125C] mr-2"></i> Destination & Coordonnées du Bénéficiaire</h3>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Adresse précise de livraison :</label>
-                    <input type="text" id="dest-address" value="${this.recipientInfo.deliveryAddress}" onchange="window.app.updateRecipientInfo()" placeholder="ex: Bonamoussadi, Rue Kotto..." class="w-full px-4 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B125C] focus:outline-none">
-                  </div>
-                  <div class="pt-2">
-                    <label class="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                      <input type="checkbox" id="is-for-self-check" ${this.recipientInfo.isForSelf ? 'checked' : ''} onchange="window.app.toggleIsForSelf(this.checked)" class="rounded text-[#6B125C]">
-                      <span>Je passe cette commande pour moi-même sur place</span>
-                    </label>
-                  </div>
-                  <div id="third-party-fields" class="${this.recipientInfo.isForSelf ? 'hidden' : ''} space-y-3 p-4 bg-pink-50/50 rounded-xl border border-pink-200">
-                    <p class="text-[11px] text-[#6B125C] font-semibold">👤 Informations du Bénéficiaire (Destinataire final) :</p>
-                    <div>
-                      <label class="block text-[11px] font-bold text-slate-700 mb-1">Nom & Prénom du Bénéficiaire :</label>
-                      <input type="text" id="dest-name" value="${this.recipientInfo.recipientName}" onchange="window.app.updateRecipientInfo()" placeholder="ex: Jean Mballe" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none">
-                    </div>
-                    <div>
-                      <label class="block text-[11px] font-bold text-slate-700 mb-1">Numéro de Téléphone du Bénéficiaire (avec indicatif pour envoi PIN OTP & Suivi) :</label>
-                      <div class="flex gap-2">
-                        <select id="dest-prefix" onchange="window.app.updateRecipientInfo()" class="bg-white text-xs border border-slate-200 font-bold px-2 py-2 rounded-xl focus:outline-none shrink-0">
-                          ${prefixOptions}
-                        </select>
-                        <input type="tel" id="dest-phone" value="${this.recipientInfo.recipientPhone}" onchange="window.app.updateRecipientInfo()" placeholder="6 77 00 11 22" class="flex-1 px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-                <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-truck text-[#6B125C] mr-2"></i> Mode de Réception</h3>
-                <div class="space-y-3">
-                  <label class="flex items-center space-x-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-[#6B125C] transition">
-                    <input type="radio" name="delivery_mode_radio" value="DELIVERY" ${this.recipientInfo.deliveryMode === 'DELIVERY' ? 'checked' : ''} onchange="window.app.setDeliveryMode('DELIVERY')" class="text-[#6B125C]">
-                    <div class="text-xs">
-                      <strong class="text-slate-800">Livraison Express Partenaire Local (ex: Yango / Gozem)</strong>
-                      <p class="text-slate-500 text-[11px]">Livraison rapide en sachet scellé avec suivi GPS en direct.</p>
-                    </div>
-                  </label>
-                  <label class="flex items-center space-x-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-[#6B125C] transition">
-                    <input type="radio" name="delivery_mode_radio" value="CLICK_COLLECT" ${this.recipientInfo.deliveryMode === 'CLICK_COLLECT' ? 'checked' : ''} onchange="window.app.setDeliveryMode('CLICK_COLLECT')" class="text-[#6B125C]">
-                    <div class="text-xs">
-                      <strong class="text-slate-800">Click & Collect Express (Retrait en Caisse)</strong>
-                      <p class="text-slate-500 text-[11px]">Commandez et récupérez directement au guichet de garde sans attente.</p>
-                    </div>
-                  </label>
-                </div>
-
-                <div class="border-t border-slate-200 pt-4 space-y-1 text-xs text-slate-600">
-                  <div class="flex justify-between"><span>Prix des médicaments :</span> <strong class="text-slate-800">${subtotal} ${country.currency}</strong></div>
-                  <div class="flex justify-between"><span>Frais de service (5%) :</span> <strong class="text-slate-800">${serviceFee} ${country.currency}</strong></div>
-                  <div class="flex justify-between"><span>Frais de livraison :</span> <strong class="text-slate-800">${deliveryFee} ${country.currency}</strong></div>
-                  <div class="flex justify-between border-t border-slate-200 pt-2 text-sm font-extrabold text-[#6B125C]">
-                    <span>Total à régler :</span> <span>${total} ${country.currency}</span>
-                  </div>
-                </div>
-
-                <div class="pt-4">
-                  <button onclick="window.app.processCheckout()" class="w-full bg-[#6B125C] text-white font-bold py-4 rounded-xl text-xs shadow-xl hover:bg-[#851264] transition">
-                    Confirmer & Payer (Mobile Money / Cartes)
-                  </button>
-                </div>
-              </div>
-            ` : ''}
-
-            <div id="pin-display-card" class="hidden bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-6 text-center space-y-4">
-              <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl shadow">
-                <i class="fa-solid fa-check"></i>
-              </div>
-              <h3 class="text-base font-bold text-emerald-800">Commande Validée avec Succès !</h3>
-              <p class="text-xs text-slate-600">Un code PIN sécurisé à 4 chiffres a été créé pour certifier la livraison en main propre.</p>
-              <div class="bg-white border border-emerald-300 p-4 rounded-xl max-w-xs mx-auto shadow-inner">
-                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">CODE PIN PRIVÉ (OTP)</span>
-                <span id="generated-pin-code" class="text-3xl font-black text-[#6B125C] tracking-widest">8492</span>
-              </div>
-              <div class="pt-2 space-y-2">
-                <button onclick="window.app.sharePinWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow transition flex items-center justify-center space-x-2">
-                  <i class="fa-brands fa-whatsapp text-lg"></i>
-                  <span>Partager le Code PIN sur WhatsApp au Bénéficiaire</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      toggleIsForSelf(checked) {
-        this.recipientInfo.isForSelf = checked;
-        const fields = document.getElementById('third-party-fields');
-        if (fields) {
-          if (checked) fields.classList.add('hidden');
-          else fields.classList.remove('hidden');
-        }
-      }
-
-      setDeliveryMode(mode) {
-        this.recipientInfo.deliveryMode = mode;
-        this.navigateTo('panier');
-      }
-
-      updateRecipientInfo() {
-        const addr = document.getElementById('dest-address');
-        const name = document.getElementById('dest-name');
-        const prefix = document.getElementById('dest-prefix');
-        const phone = document.getElementById('dest-phone');
-        if (addr) this.recipientInfo.deliveryAddress = addr.value;
-        if (name) this.recipientInfo.recipientName = name.value;
-        if (prefix) this.recipientInfo.phonePrefix = prefix.value;
-        if (phone) this.recipientInfo.recipientPhone = phone.value;
-      }
-
-      removeFromCart(index) {
-        this.cart.splice(index, 1);
-        this.updateCartBadge();
-        this.navigateTo('panier');
-      }
-
-      updateCartBadge() {
-        const badge = document.getElementById('cart-badge-count');
-        if (badge) {
-          if (this.cart.length > 0) {
-            badge.textContent = this.cart.length;
-            badge.classList.remove('hidden');
-          } else {
-            badge.classList.add('hidden');
-          }
-        }
-      }
-
-      processCheckout() {
-        this.updateRecipientInfo();
-        if (this.cart.length === 0) {
-          alert("Votre panier est vide.");
-          return;
-        }
-
-        const pin = Math.floor(1000 + Math.random() * 9000);
-        this.recipientInfo.generatedPin = pin;
-
-        const pinDisplayCard = document.getElementById('pin-display-card');
-        const pinCodeText = document.getElementById('generated-pin-code');
-
-        if (pinCodeText) pinCodeText.textContent = pin;
-        if (pinDisplayCard) {
-          pinDisplayCard.classList.remove('hidden');
-          pinDisplayCard.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-
-      sharePinWhatsApp() {
-        const pin = this.recipientInfo.generatedPin;
-        const fullPhone = `${this.recipientInfo.phonePrefix}${this.recipientInfo.recipientPhone}`.replace(/[^0-9]/g, '');
-        const address = this.recipientInfo.deliveryAddress;
-
-        const text = `Bonjour, voici votre code PIN Allo Ramia pour la livraison de médicaments à (${address}) : *${pin}*`;
-        const url = fullPhone ? `https://wa.me/${fullPhone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-      }
-
-      renderOrdoView() {
-        return `
-          <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4 text-center">
-            <div class="w-16 h-16 bg-pink-50 text-[#6B125C] rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
-              <i class="fa-solid fa-file-arrow-up"></i>
-            </div>
-            <h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance Médicale</h2>
-            <p class="text-xs text-slate-500 max-w-md mx-auto">Prenez en photo votre ordonnance ou importez le fichier PDF. Notre système vérifie la conformité avant d'envoyer la commande à la pharmacie de garde.</p>
-            <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 bg-slate-50 cursor-pointer hover:border-[#6B125C] transition">
-              <i class="fa-solid fa-cloud-arrow-up text-3xl text-pink-600 mb-2"></i>
-              <p class="text-xs font-bold text-slate-700">Cliquez ici pour télécharger votre ordonnance</p>
-              <p class="text-[10px] text-slate-400 mt-1">Formats acceptés : JPG, PNG, PDF</p>
-            </div>
-          </div>
-        `;
-      }
-
-      renderSosView() {
-        return `
-          <div class="bg-white rounded-2xl p-6 shadow-sm border border-red-200 space-y-4 text-center">
-            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-2xl">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <h2 class="text-lg font-bold text-red-600">Assistance Médicale d'Urgence SOS</h2>
-            <p class="text-xs text-slate-600">En cas d'urgence absolue, contactez immédiatement notre permanence sanitaire opérationnelle 24h/24.</p>
-            <a href="tel:+237677550909" class="inline-block bg-red-600 text-white font-bold px-6 py-3 rounded-xl text-xs shadow-lg hover:bg-red-700 transition">
-              <i class="fa-solid fa-phone-volume mr-2"></i> Appeler la Ligne d'Urgence (+237 677 550 909)
-            </a>
-          </div>
-        `;
-      }
-
-      renderConseilsView() {
-        return `
-          <div class="space-y-6">
-            <div class="border border-brand-border rounded-xl p-4 bg-pink-50/50 flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-lg bg-[#6B125C] text-white flex items-center justify-center text-lg shadow">
-                <i class="fa-solid fa-signal"></i>
-              </div>
-              <div>
-                <strong class="text-xs font-bold text-[#6B125C]">Mode Hors-Ligne actif :</strong>
-                <p class="text-[11px] text-slate-600">Les plannings de garde de la semaine sont synchronisés en local.</p>
-              </div>
-            </div>
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-              <h3 class="text-base font-bold text-slate-800 flex items-center">
-                <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i> Fiches de Premiers Secours (Offline)
-              </h3>
-              <div class="border border-red-200 rounded-2xl p-4 bg-red-50/30 space-y-2">
-                <h4 class="text-xs font-bold text-red-700 flex items-center">
-                  <i class="fa-solid fa-bell mr-2 animate-bounce"></i> Convulsions ou Fièvre Violente de Nuit
-                </h4>
-                <ol class="list-decimal list-inside text-xs text-slate-700 space-y-1">
-                  <li>Déshabiller l'enfant.</li>
-                  <li>Appliquer un linge humide sur le front.</li>
-                  <li>Administrer un suppositoire de Paracétamol.</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      renderCompteView() {
-        return `
-          <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-            <h2 class="text-lg font-bold text-[#6B125C]">Espace Utilisateur & Profil</h2>
-            <p class="text-xs text-slate-500">Mode Accès Libre activé. Toutes les fonctionnalités de géolocalisation et d'urgence sont pleinement opérationnelles.</p>
-            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
-              <p><strong>Plateforme :</strong> Allo Ramia - AfricaB2B Sarl</p>
-              <p><strong>Siège :</strong> Kotto, Douala - Cameroun</p>
-              <p><strong>Support Client :</strong> +237 677 550 909</p>
             </div>
           </div>
         `;
@@ -693,25 +429,20 @@
         if (this.map) {
           this.map.remove();
         }
-        this.map = L.map('osm-map').setView([this.currentLocation.lat, this.currentLocation.lng], 14);
+        this.map = L.map('osm-map').setView([this.currentLocation.lat, this.currentLocation.lng], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
       }
 
       getCurrentGPSLocation() {
-        if (!this.currentCountry || !this.currentCity) {
-          alert("Veuillez d'abord sélectionner votre Pays et votre Ville en haut avant d'utiliser la géolocalisation GPS.");
-          return;
-        }
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(pos => {
             this.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            this.fetchRealPharmaciesOSM();
+            this.fetchRealPharmaciesOSM(5000);
           }, () => {
-            alert("Utilisation des coordonnées GPS de la ville sélectionnée (" + this.currentCity + ").");
-            this.fetchRealPharmaciesOSM();
+            this.fetchRealPharmaciesOSM(5000);
           }, { enableHighAccuracy: true });
         } else {
-          this.fetchRealPharmaciesOSM();
+          this.fetchRealPharmaciesOSM(5000);
         }
       }
 
@@ -719,21 +450,17 @@
         const input = document.getElementById('search-input');
         const districtInput = document.getElementById('district-input');
         const searchBtn = document.getElementById('search-btn');
+        const stopBtn = document.getElementById('stop-btn');
 
-        if (!this.currentCountry || !this.currentCity) {
-          alert("Veuillez d'abord choisir votre Pays et votre Ville.");
-          return;
+        if (searchBtn) {
+          searchBtn.disabled = true;
+          searchBtn.className = "flex-1 sm:flex-none bg-[#4A0C40] text-pink-200 px-6 py-2.5 rounded-xl text-xs font-bold shadow-inner flex items-center justify-center space-x-2 cursor-wait";
+          searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i><span>Recherche...</span>`;
         }
+        if (stopBtn) stopBtn.classList.remove('hidden');
 
         if (input) this.searchedMedicine = input.value.trim();
         if (districtInput) this.currentDistrict = districtInput.value.trim();
-
-        this.hasSearched = true;
-
-        if (searchBtn) {
-          searchBtn.className = "bg-[#4A0C40] text-pink-200 px-6 py-2.5 rounded-xl text-xs font-bold shadow-inner flex items-center justify-center space-x-2";
-          searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Recherche...</span>`;
-        }
 
         if (this.currentDistrict !== "") {
           const countryName = this.countryData[this.currentCountry].name;
@@ -745,49 +472,84 @@
               this.currentLocation = { lat: parseFloat(geoData[0].lat), lng: parseFloat(geoData[0].lon) };
             }
           } catch(e) {
-            console.log("Géocodage Nominatim indisponible, utilisation des coordonnées de la ville.");
+            console.log("Géocodage indisponible, utilisation des coordonnées de la ville.");
           }
         }
 
-        await this.fetchRealPharmaciesOSM();
+        await this.fetchRealPharmaciesOSM(5000);
+
+        this.resetSearchButtons();
+      }
+
+      cancelSearch() {
+        if (this.activeSearchController) {
+          this.activeSearchController.abort();
+          this.activeSearchController = null;
+        }
+        this.isLoadingPharmacies = false;
+        this.resetSearchButtons();
+
+        const gridHome = document.getElementById('pharmacies-grid');
+        if (gridHome) {
+          gridHome.innerHTML = `
+            <div class="p-6 text-center space-y-2 bg-amber-50 rounded-2xl border border-amber-200">
+              <i class="fa-solid fa-circle-exclamation text-2xl text-amber-600"></i>
+              <p class="text-xs font-bold text-amber-800">Recherche annulée.</p>
+              <p class="text-[11px] text-amber-700">Vous pouvez vérifier vos informations de saisie et relancer la recherche.</p>
+            </div>
+          `;
+        }
+      }
+
+      resetSearchButtons() {
+        const searchBtn = document.getElementById('search-btn');
+        const stopBtn = document.getElementById('stop-btn');
 
         if (searchBtn) {
-          searchBtn.className = "bg-white text-[#6B125C] px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-pink-50 transition shadow flex items-center justify-center space-x-2";
+          searchBtn.disabled = false;
+          searchBtn.className = "flex-1 sm:flex-none bg-white text-[#6B125C] px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-pink-50 transition shadow flex items-center justify-center space-x-2";
           searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i><span>Rechercher</span>`;
         }
+        if (stopBtn) stopBtn.classList.add('hidden');
       }
 
       async fetchRealPharmaciesOSM(radius = 5000) {
         if (!this.currentLocation) return;
+        
+        if (this.activeSearchController) {
+          this.activeSearchController.abort();
+        }
+        this.activeSearchController = new AbortController();
+
         this.searchRadius = radius;
         this.isLoadingPharmacies = true;
         this.updateMapAndCards();
 
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
-        const query = `[out:json];node(around:${radius},${lat},${lng})[amenity=pharmacy];out;`;
         
-        // Miroir Overpass principal ultra-rapide avec système de secours (fallback)
+        const query = `[out:json][timeout:12];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center;`;
+        
         const mirrors = [
-          `https://overpass.kumi.systems/api/interpreter?data=`,
-          `https://z.overpass-api.de/api/interpreter?data=`
+          `https://overpass-api.de/api/interpreter?data=`,
+          `https://overpass.kumi.systems/api/interpreter?data=`
         ];
 
         let data = null;
         for (let mirrorUrl of mirrors) {
           try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000); // Timeout de 12s
-
-            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: controller.signal });
-            clearTimeout(timeoutId);
+            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: this.activeSearchController.signal });
 
             if (response.ok) {
               data = await response.json();
-              break; // Succès, on sort de la boucle
+              break;
             }
           } catch (err) {
-            console.warn("Échec du miroir Overpass, essai suivant...", err);
+            if (err.name === 'AbortError') {
+              console.log("Requête annulée par l'utilisateur.");
+              return;
+            }
+            console.warn("Miroir indisponible, tentative sur le suivant...", err);
           }
         }
 
@@ -796,7 +558,7 @@
         if (data && data.elements && data.elements.length > 0) {
           this.parsePharmacies(data.elements, lat, lng);
         } else if (radius === 5000) {
-          // Si rien trouvé à 5km, on élargit automatiquement à 10km
+          // Si rien n'est trouvé dans les 5 km, élargissement automatique à 10 km
           await this.fetchRealPharmaciesOSM(10000);
         } else {
           this.realPharmacies = [];
@@ -806,33 +568,39 @@
 
       parsePharmacies(elements, lat, lng) {
         const cityName = this.currentCity || "";
+        
         this.realPharmacies = elements.map(el => {
           const tags = el.tags || {};
           const name = tags.name ? tags.name : "Pharmacie (Nom non renseigné)";
           
-          const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || null;
+          // Récupération stricte des vrais numéros, e-mails et sites de la base OpenStreetMap
+          const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || tags['contact:mobile'] || null;
           const email = tags.email || tags['contact:email'] || null;
           const website = tags.website || tags['contact:website'] || null;
 
           const street = tags['addr:street'] || "";
-          const houseNumber = tags['addr:housenumber'] ? `N° ${tags['addr:housenumber']}` : "";
-          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || tags.suburb || this.currentDistrict || "";
+          const housenumber = tags['addr:housenumber'] ? `N° ${tags['addr:housenumber']}` : "";
+          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || this.currentDistrict || "";
           const city = tags['addr:city'] || cityName;
 
-          let addressParts = [street, houseNumber, suburb, city].filter(Boolean);
+          let addressParts = [street, housenumber, suburb, city].filter(Boolean);
           let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : `${cityName}`;
 
+          const elLat = el.lat || (el.center ? el.center.lat : lat);
+          const elLon = el.lon || (el.center ? el.center.lon : lng);
+
+          // Calcul de la distance réelle
           const R = 6371;
-          const dLat = (el.lat - lat) * Math.PI / 180;
-          const dLon = (el.lon - lng) * Math.PI / 180;
+          const dLat = (elLat - lat) * Math.PI / 180;
+          const dLon = (elLon - lng) * Math.PI / 180;
           const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(lat * Math.PI / 180) * Math.cos(el.lat * Math.PI / 180) * 
+                    Math.cos(lat * Math.PI / 180) * Math.cos(elLat * Math.PI / 180) * 
                     Math.sin(dLon/2) * Math.sin(dLon/2);
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
           const distance = R * c;
 
-          return { id: el.id, name, phone, email, website, address: fullAddress, lat: el.lat, lng: el.lon, distance };
-        }).sort((a, b) => a.distance - b.distance);
+          return { id: el.id, name, phone, email, website, address: fullAddress, lat: elLat, lng: elLon, distance };
+        }).sort((a, b) => a.distance - b.distance); // Tri par proximité de livraison
 
         this.initMap();
         this.updateMapAndCards();
@@ -840,13 +608,13 @@
 
       updateMapAndCards() {
         if (this.currentView === 'home' && this.map && this.currentLocation) {
-          this.map.setView([this.currentLocation.lat, this.currentLocation.lng], 14);
+          this.map.setView([this.currentLocation.lat, this.currentLocation.lng], 13);
           if (this.userMarker) this.map.removeLayer(this.userMarker);
           
           const locationTag = this.currentDistrict ? `${this.currentDistrict}, ${this.currentCity}` : this.currentCity;
           this.userMarker = L.circleMarker([this.currentLocation.lat, this.currentLocation.lng], {
             radius: 9, fillColor: "#A1197A", color: "#FFF", weight: 2, fillOpacity: 0.9
-          }).addTo(this.map).bindPopup(`📍 Destination : ${locationTag}`).openPopup();
+          }).addTo(this.map).bindPopup(`📍 Lieu de livraison : ${locationTag}`).openPopup();
 
           this.mapMarkers.forEach(m => this.map.removeLayer(m));
           this.mapMarkers = [];
@@ -856,8 +624,7 @@
             marker.bindPopup(`
               <div class="p-1">
                 <strong class="text-xs text-[#6B125C]">${p.name}</strong><br/>
-                <span class="text-[10px] text-emerald-600 font-bold">À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span><br/>
-                <span class="text-[10px] text-slate-500">${p.address}</span>
+                <span class="text-[10px] text-emerald-600 font-bold">À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span>
               </div>
             `);
             this.mapMarkers.push(marker);
@@ -874,40 +641,45 @@
           htmlCards = `
             <div class="p-6 text-center space-y-2 bg-pink-50/50 rounded-2xl border border-pink-100">
               <i class="fa-solid fa-circle-notch fa-spin text-2xl text-[#6B125C]"></i>
-              <p class="text-xs font-bold text-slate-800">Localisation GPS des pharmacies de garde en cours à ${locText}...</p>
-              <p class="text-[11px] text-slate-500">Recherche d'officines réelles via OpenStreetMap.</p>
+              <p class="text-xs font-bold text-slate-800">Recherche GPS en cours autour du lieu de livraison à ${locText} (Rayon : ${(this.searchRadius/1000).toFixed(0)} km)...</p>
+              <p class="text-[11px] text-slate-500">Extraction des données réelles OpenStreetMap.</p>
             </div>
           `;
-        } else if (!this.hasSearched) {
-          htmlCards = `<p class="text-xs text-slate-500 italic">Veuillez sélectionner le Pays, la Ville, saisir un Quartier (optionnel) et cliquer sur "Rechercher" pour localiser les pharmacies.</p>`;
         } else if (this.realPharmacies.length === 0) {
-          htmlCards = `<p class="text-xs text-slate-500 italic">Aucune pharmacie trouvée à proximité de ${this.currentDistrict || this.currentCity}.</p>`;
+          htmlCards = `
+            <div class="p-6 text-center space-y-2 bg-slate-50 rounded-2xl border border-slate-200">
+              <i class="fa-solid fa-map-location-dot text-2xl text-slate-400"></i>
+              <p class="text-xs font-bold text-slate-700">Aucune pharmacie trouvée dans un rayon de ${(this.searchRadius/1000).toFixed(0)} km.</p>
+              <p class="text-[11px] text-slate-500">Veuillez vérifier le nom de la ville ou du quartier renseigné.</p>
+            </div>
+          `;
         } else {
           htmlCards = this.realPharmacies.map(p => {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${this.currentLocation.lat},${this.currentLocation.lng}&destination=${p.lat},${p.lng}&travelmode=driving`;
             const distLabel = p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km';
             const medNameToOrder = this.searchedMedicine ? this.searchedMedicine : "Médicament demandé";
-            const medPrice = 3500;
 
             return `
               <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-[#6B125C] transition space-y-4">
                 <div class="flex items-start justify-between">
-                  <div>
+                  <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                       <span class="text-base">💊</span>
                       <h4 class="font-bold text-[#6B125C] text-sm sm:text-base">${p.name}</h4>
                     </div>
                     
-                    <p class="text-xs text-slate-600 mt-1">
-                      <strong class="text-slate-700">Adresse complète :</strong> ${p.address}
+                    <p class="text-xs text-slate-600">
+                      <strong class="text-slate-700"><i class="fa-solid fa-location-dot text-pink-700 mr-1"></i>Adresse :</strong> ${p.address}
                     </p>
-                    
-                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mt-1">
-                      <span><strong class="text-slate-700">Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
-                      <span><strong class="text-slate-700">Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
-                      <span><strong class="text-slate-700">Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter le site</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+
+                    <!-- Informations réelles extraites d'OpenStreetMap -->
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 pt-1">
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-globe text-xs mr-1"></i>Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
                     </div>
                   </div>
+
                   <span class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200 shrink-0">
                     À ${distLabel}
                   </span>
@@ -920,10 +692,10 @@
                       <span>Appeler</span>
                     </a>
                   ` : `
-                    <div class="w-full bg-slate-100 text-slate-400 font-medium py-2 rounded-xl text-xs text-center flex items-center justify-center space-x-1 cursor-not-allowed">
+                    <button disabled class="w-full bg-slate-100 text-slate-400 font-medium py-2 rounded-xl text-xs text-center flex items-center justify-center space-x-1 cursor-not-allowed opacity-75">
                       <i class="fa-solid fa-phone-slash text-xs"></i>
-                      <span>Non affiliée</span>
-                    </div>
+                      <span>Numéro indisponible</span>
+                    </button>
                   `}
 
                   <a href="${mapsUrl}" target="_blank" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1">
@@ -931,7 +703,7 @@
                     <span>Itinéraire</span>
                   </a>
 
-                  <button onclick="window.app.addToCart('${medNameToOrder.replace(/'/g, "\\'")}', ${medPrice}, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-2 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1">
+                  <button onclick="window.app.addToCart('${medNameToOrder.replace(/'/g, "\\'")}', 3500, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-2 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>Commander</span>
                   </button>
@@ -945,17 +717,42 @@
       }
 
       addToCart(name, price, pharmacyName) {
-        this.cart.push({ id: Date.now(), name: `${name} (via ${pharmacyName})`, price: price, qty: 1 });
+        this.cart.push({ id: Date.now(), name: `${name} (${pharmacyName})`, price: price, qty: 1 });
         this.updateCartBadge();
+        this.navigateTo('panier');
+      }
 
-        const goToCart = confirm(`"${name}" a été ajouté avec succès au panier !\n\nVoulez-vous passer directement au panier pour valider votre commande ?\n(Cliquez sur Annuler pour commander un autre médicament)`);
-        
-        if (goToCart) {
-          this.navigateTo('panier');
-        } else {
-          this.searchedMedicine = "";
-          const input = document.getElementById('search-input');
-          if (input) input.value = "";
+      renderPanierView() {
+        return `
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
+            <h2 class="text-lg font-bold text-[#6B125C]">Panier (${this.cart.length})</h2>
+            ${this.cart.length === 0 ? '<p class="text-xs text-slate-400">Votre panier est vide.</p>' : ''}
+          </div>
+        `;
+      }
+
+      renderOrdoView() {
+        return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance</h2></div>`;
+      }
+
+      renderSosView() {
+        return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`;
+      }
+
+      renderConseilsView() {
+        return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`;
+      }
+
+      renderCompteView() {
+        return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Mon Profil</h2></div>`;
+      }
+
+      updateCartBadge() {
+        const badge = document.getElementById('cart-badge-count');
+        if (badge) {
+          badge.textContent = this.cart.length;
+          if (this.cart.length > 0) badge.classList.remove('hidden');
+          else badge.classList.add('hidden');
         }
       }
     }
@@ -965,3 +762,4 @@
   </script>
 </body>
 </html>
+
