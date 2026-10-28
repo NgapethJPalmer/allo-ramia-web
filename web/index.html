@@ -528,33 +528,55 @@
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
         
-        const query = `[out:json][timeout:5];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center body;`;
-        
-        const mirrors = [
-          `https://overpass-api.de/api/interpreter?data=`,
-          `https://overpass.kumi.systems/api/interpreter?data=`
-        ];
+        // Remplacez 'VOTRE_CLE_API_GEOAPIFY' par votre clé gratuite Geoapify
+        const apiKey = "6faa54ea808d43b7a3c26e7f3fce4da2";
+        const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=30&apiKey=${apiKey}`;
 
-        let data = null;
+        let pharmaciesList = [];
         try {
-          const fetchPromises = mirrors.map(url => 
-            fetch(url + encodeURIComponent(query), { signal: this.activeSearchController.signal })
-              .then(res => res.ok ? res.json() : Promise.reject())
-          );
-          data = await Promise.any(fetchPromises);
+          const response = await fetch(url, { signal: this.activeSearchController.signal });
+          const data = await response.json();
+
+          if (data && data.features) {
+            pharmaciesList = data.features.map(f => {
+              const props = f.properties;
+              const elLat = props.lat;
+              const elLon = props.lon;
+
+              // Calcul de la distance par rapport à l'utilisateur
+              const R = 6371;
+              const dLat = (elLat - lat) * Math.PI / 180;
+              const dLon = (elLon - lng) * Math.PI / 180;
+              const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                        Math.cos(lat * Math.PI / 180) * Math.cos(elLat * Math.PI / 180) * 
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+              const distance = R * c;
+
+              return {
+                id: props.place_id || Math.random(),
+                name: props.name || "Pharmacie",
+                phone: props.contact?.phone || props.datasource?.raw?.phone || null,
+                email: props.contact?.email || null,
+                website: props.website || null,
+                openingHours: props.opening_hours || null,
+                brand: props.brand || null,
+                address: props.formatted || props.address_line2 || "Adresse non renseignée",
+                lat: elLat,
+                lng: elLon,
+                distance: distance
+              };
+            });
+          }
         } catch (err) {
-          console.warn("Erreur ou annulation sur Overpass", err);
+          console.warn("Erreur lors de la récupération Geoapify", err);
         }
 
+        this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
         this.isLoadingPharmacies = false;
         this.resetSearchButtons();
-
-        if (data && data.elements && data.elements.length > 0) {
-          this.parsePharmacies(data.elements, lat, lng);
-        } else {
-          this.realPharmacies = [];
-          this.updateMapAndCards();
-        }
+        this.initMap();
+        this.updateMapAndCards();
       }
 
       parsePharmacies(elements, lat, lng) {
