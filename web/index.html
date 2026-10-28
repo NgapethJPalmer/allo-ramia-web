@@ -72,7 +72,12 @@
 
   <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col space-y-8">
-    <div id="view-container" class="flex-1 space-y-8"></div>
+    <div id="view-container" class="flex-1 space-y-8">
+      <div class="p-12 text-center space-y-4">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-[#6B125C]"></i>
+        <p class="text-sm font-bold text-slate-700">Détection automatique de votre position GPS...</p>
+      </div>
+    </div>
   </main>
 
   <!-- BOTTOM NAVIGATION BAR -->
@@ -127,24 +132,23 @@
       constructor() {
         this.currentView = 'home';
         this.currentCountry = 'CM';
-        this.currentCity = 'Yaoundé';
+        this.currentCity = 'Douala';
         this.currentDistrict = '';
         this.map = null;
         this.mapMarkers = [];
         this.userMarker = null;
-        this.currentLocation = { lat: 3.8480, lng: 11.5021 };
+        this.currentLocation = { lat: 4.0511, lng: 9.7679 }; // Douala par défaut
         this.realPharmacies = [];
-        this.searchRadius = 5000;
+        this.searchRadius = 5000; // 5 km par défaut
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
         this.activeSearchController = null;
-        this.searchDuration = "0.00";
 
         this.countryData = {
           'CM': { 
             name: 'Cameroun', currency: 'XAF', phonePrefix: '+237',
             cities: { 
-              'Yaoundé': { lat: 3.8480, lng: 11.5021 }, 'Douala': { lat: 4.0511, lng: 9.7679 }, 
+              'Douala': { lat: 4.0511, lng: 9.7679 }, 'Yaoundé': { lat: 3.8480, lng: 11.5021 }, 
               'Bafoussam': { lat: 5.4778, lng: 10.4176 }, 'Garoua': { lat: 9.3011, lng: 13.3977 },
               'Maroua': { lat: 10.5910, lng: 14.3159 }, 'Bamenda': { lat: 5.9631, lng: 10.1591 },
               'Buea': { lat: 4.1550, lng: 9.2435 }, 'Limbe': { lat: 4.0244, lng: 9.2149 },
@@ -205,12 +209,13 @@
       }
 
       init() {
-        this.navigateTo('home');
         this.updateCartBadge();
-        this.autoDetectUserLocation();
+        this.autoDetectUserLocation(() => {
+          this.navigateTo('home');
+        });
       }
 
-      autoDetectUserLocation() {
+      autoDetectUserLocation(callback) {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (pos) => {
@@ -224,8 +229,6 @@
 
                   if (this.countryData[countryCode]) {
                     this.currentCountry = countryCode;
-                    const countrySelect = document.getElementById('country-selector');
-                    if (countrySelect) countrySelect.value = countryCode;
                   }
 
                   if (detectedCity) {
@@ -236,19 +239,25 @@
                   }
                 }
               } catch (e) {
-                console.log("Géocodage inverse indisponible.");
+                console.warn("Erreur reverse geocoding:", e);
               }
 
-              this.renderCityDropdown();
-              this.fetchRealPharmaciesOSM(5000);
+              if (typeof callback === 'function') callback();
             },
-            () => {
-              this.fetchRealPharmaciesOSM(5000);
+            (err) => {
+              console.warn("Erreur GPS ou accès refusé:", err);
+              this.currentCountry = 'CM';
+              this.currentCity = 'Douala';
+              this.currentLocation = this.countryData['CM'].cities['Douala'];
+              if (typeof callback === 'function') callback();
             },
-            { enableHighAccuracy: true, timeout: 8000 }
+            { enableHighAccuracy: true, timeout: 6000 }
           );
         } else {
-          this.fetchRealPharmaciesOSM(5000);
+          this.currentCountry = 'CM';
+          this.currentCity = 'Douala';
+          this.currentLocation = this.countryData['CM'].cities['Douala'];
+          if (typeof callback === 'function') callback();
         }
       }
 
@@ -281,16 +290,14 @@
 
         if (!this.currentCountry) {
           citySelect.disabled = true;
-          citySelect.innerHTML = `<option value="">Veuillez d'abord choisir un pays</option>`;
+          citySelect.innerHTML = `<option value="">Veuillez choisir un pays</option>`;
         } else {
           citySelect.disabled = false;
           const countryInfo = this.countryData[this.currentCountry];
           const cityOptions = Object.keys(countryInfo.cities).map(city => 
             `<option value="${city}" ${city === this.currentCity ? 'selected' : ''}>${city}</option>`
           ).join('');
-
           citySelect.innerHTML = cityOptions;
-          citySelect.className = "bg-white text-[#6B125C] font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer";
         }
       }
 
@@ -337,7 +344,7 @@
         return `
           <div class="space-y-8">
             <div class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] rounded-2xl p-6 sm:p-8 text-white shadow-xl space-y-4">
-              <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">📍 Géolocalisation Réelle GPS (Rayon adaptatif : 5 km à 10 km)</span>
+              <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">📍 Géolocalisation Automatique Active (Rayon 5 km)</span>
               <h2 class="text-2xl sm:text-3xl font-extrabold mb-1">Trouvez vos médicaments à proximité.</h2>
               <p class="text-sm text-pink-100 mb-4">Pharmacies identifiées depuis le point de livraison et classées par proximité.</p>
               
@@ -351,7 +358,7 @@
                       <span>Rechercher</span>
                     </button>
 
-                    <button id="stop-btn" onclick="window.app.cancelSearch()" class="bg-[#6B125C] hover:bg-[#851264] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow flex items-center justify-center space-x-1" title="Annuler la recherche en cours">
+                    <button id="stop-btn" onclick="window.app.cancelSearch()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow flex items-center justify-center space-x-1" title="Annuler">
                       <i class="fa-solid fa-xmark text-sm"></i>
                       <span>Stop</span>
                     </button>
@@ -366,7 +373,7 @@
                   </div>
                   <div class="flex items-center space-x-2">
                     <span class="text-pink-100 font-semibold shrink-0">Quartier / Secteur :</span>
-                    <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Kotto, Bastos, Akwa..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
+                    <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Kotto, Akwa, Bonapriso..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
                   </div>
                 </div>
               </div>
@@ -377,7 +384,7 @@
                 <div class="flex items-center justify-between mb-3">
                   <h3 class="font-bold text-slate-800 text-sm">Carte des Officines Autour de Votre Point de Livraison</h3>
                   <button onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-semibold transition">
-                    <i class="fa-solid fa-crosshairs mr-1"></i> Ma Position GPS
+                    <i class="fa-solid fa-crosshairs mr-1"></i> Réactualiser Position
                   </button>
                 </div>
                 <div id="osm-map" class="w-full h-80 rounded-xl border border-slate-200 z-10"></div>
@@ -400,10 +407,10 @@
             </div>
 
             <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm mt-8">
-              <div class="flex items-center justify-between mb-4">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
                 <h3 class="font-bold text-slate-800 text-base">Pharmacies détectées (de la plus proche à la plus éloignée)</h3>
-                <div class="flex items-center gap-2">
-                  <span class="px-3 py-1 bg-purple-50 text-[#6B125C] font-semibold text-xs rounded-full border border-purple-200">⏱️ <span id="timer-display">${this.searchDuration}</span>s</span>
+                <div class="flex items-center space-x-2">
+                  <span id="pharmacy-count-badge" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">0 pharmacie trouvée</span>
                   <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
                 </div>
               </div>
@@ -417,9 +424,7 @@
       initMap() {
         const container = document.getElementById('osm-map');
         if (!container || !this.currentLocation) return;
-        if (this.map) {
-          this.map.remove();
-        }
+        if (this.map) this.map.remove();
         this.map = L.map('osm-map').setView([this.currentLocation.lat, this.currentLocation.lng], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
       }
@@ -440,15 +445,6 @@
       async performSearch() {
         const input = document.getElementById('search-input');
         const districtInput = document.getElementById('district-input');
-        const searchBtn = document.getElementById('search-btn');
-        const stopBtn = document.getElementById('stop-btn');
-
-        if (searchBtn) {
-          searchBtn.disabled = true;
-          searchBtn.className = "flex-1 sm:flex-none bg-[#4A0C40] text-pink-200 px-6 py-2.5 rounded-xl text-xs font-bold shadow-inner flex items-center justify-center space-x-2 cursor-wait";
-          searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i><span>Recherche...</span>`;
-        }
-        if (stopBtn) stopBtn.classList.remove('hidden');
 
         if (input) this.searchedMedicine = input.value.trim();
         if (districtInput) this.currentDistrict = districtInput.value.trim();
@@ -457,19 +453,18 @@
           const countryName = this.countryData[this.currentCountry].name;
           const searchAddress = `${this.currentDistrict}, ${this.currentCity}, ${countryName}`;
           try {
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}`);
+            const controllerGeo = new AbortController();
+            const timeoutGeo = setTimeout(() => controllerGeo.abort(), 3000);
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}`, { signal: controllerGeo.signal });
+            clearTimeout(timeoutGeo);
             const geoData = await geoRes.json();
             if (geoData && geoData.length > 0) {
               this.currentLocation = { lat: parseFloat(geoData[0].lat), lng: parseFloat(geoData[0].lon) };
             }
-          } catch(e) {
-            console.log("Géocodage indisponible, utilisation des coordonnées de la ville.");
-          }
+          } catch(e) {}
         }
 
         await this.fetchRealPharmaciesOSM(5000);
-
-        this.resetSearchButtons();
       }
 
       cancelSearch() {
@@ -478,12 +473,6 @@
           this.activeSearchController = null;
         }
         this.isLoadingPharmacies = false;
-        
-        // Remise à zéro immédiate du compteur à 0.00s
-        this.searchDuration = "0.00";
-        const timerEl = document.getElementById('timer-display');
-        if (timerEl) timerEl.textContent = "0.00";
-
         this.resetSearchButtons();
 
         const gridHome = document.getElementById('pharmacies-grid');
@@ -492,10 +481,22 @@
             <div class="p-6 text-center space-y-2 bg-amber-50 rounded-2xl border border-amber-200">
               <i class="fa-solid fa-circle-exclamation text-2xl text-amber-600"></i>
               <p class="text-xs font-bold text-amber-800">Recherche annulée.</p>
-              <p class="text-[11px] text-amber-700">Vous pouvez vérifier vos informations de saisie et relancer la recherche.</p>
+              <p class="text-[11px] text-amber-700">Vous pouvez relancer la recherche.</p>
             </div>
           `;
         }
+      }
+
+      setSearchStateLoading() {
+        const searchBtn = document.getElementById('search-btn');
+        const stopBtn = document.getElementById('stop-btn');
+
+        if (searchBtn) {
+          searchBtn.disabled = true;
+          searchBtn.className = "flex-1 sm:flex-none bg-[#4A0C40] text-pink-200 px-6 py-2.5 rounded-xl text-xs font-bold shadow-inner flex items-center justify-center space-x-2 cursor-wait opacity-90";
+          searchBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-sm"></i><span>Recherche...</span>`;
+        }
+        if (stopBtn) stopBtn.classList.remove('hidden');
       }
 
       resetSearchButtons() {
@@ -510,6 +511,7 @@
         if (stopBtn) stopBtn.classList.add('hidden');
       }
 
+      // REQUÊTE OVERPASS COMPLÈTE
       async fetchRealPharmaciesOSM(radius = 5000) {
         if (!this.currentLocation) return;
         
@@ -518,26 +520,15 @@
         }
         this.activeSearchController = new AbortController();
 
-        const startTime = performance.now();
         this.searchRadius = radius;
         this.isLoadingPharmacies = true;
+        this.setSearchStateLoading();
         this.updateMapAndCards();
-
-        // Compteur en direct mis à jour toutes les 50ms
-        const timerInterval = setInterval(() => {
-          if (!this.isLoadingPharmacies) {
-            clearInterval(timerInterval);
-            return;
-          }
-          const currentElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
-          const timerEl = document.getElementById('timer-display');
-          if (timerEl) timerEl.textContent = currentElapsed;
-        }, 50);
 
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
         
-        const query = `[out:json][timeout:6];node(around:${radius},${lat},${lng})[amenity=pharmacy];out body;`;
+        const query = `[out:json][timeout:5];(node(around:${radius},${lat},${lng})[amenity=pharmacy];way(around:${radius},${lat},${lng})[amenity=pharmacy];);out center body;`;
         
         const mirrors = [
           `https://overpass-api.de/api/interpreter?data=`,
@@ -545,38 +536,22 @@
         ];
 
         let data = null;
-        for (let mirrorUrl of mirrors) {
-          try {
-            const response = await fetch(mirrorUrl + encodeURIComponent(query), { signal: this.activeSearchController.signal });
-
-            if (response.ok) {
-              data = await response.json();
-              break;
-            }
-          } catch (err) {
-            if (err.name === 'AbortError') {
-              clearInterval(timerInterval);
-              return;
-            }
-          }
+        try {
+          const fetchPromises = mirrors.map(url => 
+            fetch(url + encodeURIComponent(query), { signal: this.activeSearchController.signal })
+              .then(res => res.ok ? res.json() : Promise.reject())
+          );
+          data = await Promise.any(fetchPromises);
+        } catch (err) {
+          console.warn("Erreur ou annulation sur Overpass", err);
         }
 
-        clearInterval(timerInterval);
         this.isLoadingPharmacies = false;
-        const finalTime = ((performance.now() - startTime) / 1000).toFixed(2);
+        this.resetSearchButtons();
 
         if (data && data.elements && data.elements.length > 0) {
-          this.searchDuration = finalTime;
-          const timerEl = document.getElementById('timer-display');
-          if (timerEl) timerEl.textContent = finalTime;
           this.parsePharmacies(data.elements, lat, lng);
-        } else if (radius === 5000) {
-          await this.fetchRealPharmaciesOSM(10000);
         } else {
-          // Si aucune pharmacie n'est trouvée après 10km, réinitialisation du compteur à 0.00s
-          this.searchDuration = "0.00";
-          const timerEl = document.getElementById('timer-display');
-          if (timerEl) timerEl.textContent = "0.00";
           this.realPharmacies = [];
           this.updateMapAndCards();
         }
@@ -584,25 +559,31 @@
 
       parsePharmacies(elements, lat, lng) {
         const cityName = this.currentCity || "";
+        const countryName = this.countryData[this.currentCountry]?.name || "";
         
         this.realPharmacies = elements.map(el => {
           const tags = el.tags || {};
-          const name = tags.name ? tags.name : "Nom non enregistré";
+          const name = tags.name || tags['name:fr'] || tags['official_name'] || "Pharmacie (Nom non renseigné)";
           
-          const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || tags['contact:mobile'] || null;
+          const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || tags['contact:mobile'] || tags.mobile || null;
           const email = tags.email || tags['contact:email'] || null;
-          const website = tags.website || tags['contact:website'] || null;
+          const website = tags.website || tags['contact:website'] || tags.url || null;
+          const openingHours = tags.opening_hours || tags['dispensing:opening_hours'] || null;
+          const brand = tags.brand || tags['operator'] || null;
 
-          const street = tags['addr:street'] || "";
+          const street = tags['addr:street'] || tags['addr:place'] || "";
           const housenumber = tags['addr:housenumber'] ? `N° ${tags['addr:housenumber']}` : "";
-          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || "";
-          const city = tags['addr:city'] || cityName;
+          const suburb = tags['addr:suburb'] || tags['addr:quarter'] || tags['addr:neighbourhood'] || tags['addr:district'] || this.currentDistrict || "";
+          const city = tags['addr:city'] || tags['addr:town'] || cityName;
+          const country = tags['addr:country'] || countryName;
 
-          let addressParts = [street, housenumber, suburb, city].filter(Boolean);
-          let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : "Adresse non enregistrée";
+          let addressParts = [street, housenumber, suburb, city, country].filter(Boolean);
+          let fullAddress = addressParts.length > 0 ? addressParts.join(", ") : `${cityName}, ${countryName}`;
 
-          const elLat = el.lat;
-          const elLon = el.lon;
+          const elLat = el.lat || (el.center ? el.center.lat : null);
+          const elLon = el.lon || (el.center ? el.center.lon : null);
+
+          if (!elLat || !elLon) return null;
 
           const R = 6371;
           const dLat = (elLat - lat) * Math.PI / 180;
@@ -613,8 +594,22 @@
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
           const distance = R * c;
 
-          return { id: el.id, name, phone, email, website, address: fullAddress, lat: elLat, lng: elLon, distance };
-        }).sort((a, b) => a.distance - b.distance);
+          return { 
+            id: el.id, 
+            name, 
+            phone, 
+            email, 
+            website, 
+            openingHours,
+            brand,
+            address: fullAddress, 
+            city,
+            country,
+            lat: elLat, 
+            lng: elLon, 
+            distance 
+          };
+        }).filter(Boolean).sort((a, b) => a.distance - b.distance);
 
         this.initMap();
         this.updateMapAndCards();
@@ -634,11 +629,16 @@
           this.mapMarkers = [];
 
           this.realPharmacies.forEach(p => {
+            const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${this.currentLocation.lat},${this.currentLocation.lng}&destination=${p.lat},${p.lng}&travelmode=driving`;
             const marker = L.marker([p.lat, p.lng]).addTo(this.map);
             marker.bindPopup(`
-              <div class="p-1">
-                <strong class="text-xs text-[#6B125C]">${p.name}</strong><br/>
-                <span class="text-[10px] text-emerald-600 font-bold">À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span>
+              <div class="p-1.5 space-y-1">
+                <strong class="text-xs text-[#6B125C] font-bold block">${p.name}</strong>
+                <p class="text-[10px] text-slate-600">${p.address}</p>
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-[10px] text-emerald-600 font-bold">À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span>
+                  <a href="${mapsUrl}" target="_blank" class="text-[10px] bg-[#6B125C] text-white px-2 py-0.5 rounded font-bold hover:bg-pink-700">Itinéraire GPS</a>
+                </div>
               </div>
             `);
             this.mapMarkers.push(marker);
@@ -647,7 +647,14 @@
 
         const gridHome = document.getElementById('pharmacies-grid');
         const radiusBadge = document.getElementById('radius-badge');
+        const countBadge = document.getElementById('pharmacy-count-badge');
+
         if (radiusBadge) radiusBadge.textContent = `Rayon : ${(this.searchRadius/1000).toFixed(0)} km`;
+        
+        if (countBadge) {
+          const totalFound = this.realPharmacies.length;
+          countBadge.textContent = `${totalFound} pharmacie${totalFound > 1 ? 's' : ''} trouvée${totalFound > 1 ? 's' : ''}`;
+        }
 
         let htmlCards = "";
         if (this.isLoadingPharmacies) {
@@ -655,16 +662,16 @@
           htmlCards = `
             <div class="p-6 text-center space-y-2 bg-pink-50/50 rounded-2xl border border-pink-100">
               <i class="fa-solid fa-circle-notch fa-spin text-2xl text-[#6B125C]"></i>
-              <p class="text-xs font-bold text-slate-800">Recherche GPS en cours autour du lieu de livraison à ${locText} (Rayon : ${(this.searchRadius/1000).toFixed(0)} km)...</p>
-              <p class="text-[11px] text-slate-500">Extraction des données réelles OpenStreetMap.</p>
+              <p class="text-xs font-bold text-slate-800">Recherche rapide en cours autour de ${locText}...</p>
+              <p class="text-[11px] text-slate-500">Extraction des métadonnées (téléphone, adresse, itinéraire...)</p>
             </div>
           `;
         } else if (this.realPharmacies.length === 0) {
           htmlCards = `
             <div class="p-6 text-center space-y-2 bg-slate-50 rounded-2xl border border-slate-200">
               <i class="fa-solid fa-map-location-dot text-2xl text-slate-400"></i>
-              <p class="text-xs font-bold text-slate-700">Aucune pharmacie trouvée dans un rayon de ${(this.searchRadius/1000).toFixed(0)} km.</p>
-              <p class="text-[11px] text-slate-500">Veuillez vérifier le nom de la ville ou du quartier renseigné.</p>
+              <p class="text-xs font-bold text-slate-700">Aucune pharmacie trouvée dans un rayon de 5 km.</p>
+              <p class="text-[11px] text-slate-500">Veuillez vérifier la ville ou le quartier renseigné.</p>
             </div>
           `;
         } else {
@@ -680,6 +687,7 @@
                     <div class="flex items-center space-x-2">
                       <span class="text-base">💊</span>
                       <h4 class="font-bold text-[#6B125C] text-sm sm:text-base">${p.name}</h4>
+                      ${p.brand ? `<span class="px-2 py-0.5 bg-pink-100 text-[#6B125C] text-[10px] font-bold rounded-md">${p.brand}</span>` : ''}
                     </div>
                     
                     <p class="text-xs text-slate-600">
@@ -687,9 +695,10 @@
                     </p>
 
                     <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 pt-1">
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
-                      <span><strong class="text-slate-700"><i class="fa-solid fa-globe text-xs mr-1"></i>Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter</a>` : '<span class="italic text-slate-400">Non enregistré</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-xs mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-red-500 font-semibold">Numéro indisponible</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-envelope text-xs mr-1"></i>Email :</strong> ${p.email ? `<a href="mailto:${p.email}" class="text-[#6B125C] hover:underline">${p.email}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+                      <span><strong class="text-slate-700"><i class="fa-solid fa-globe text-xs mr-1"></i>Site :</strong> ${p.website ? `<a href="${p.website}" target="_blank" class="text-blue-600 hover:underline">Visiter</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
+                      ${p.openingHours ? `<span><strong class="text-slate-700"><i class="fa-solid fa-clock text-xs mr-1"></i>Horaires :</strong> <span class="text-amber-700 font-medium">${p.openingHours}</span></span>` : ''}
                     </div>
                   </div>
 
@@ -700,23 +709,23 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-100">
                   ${p.phone ? `
-                    <a href="tel:${p.phone}" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1">
+                    <a href="tel:${p.phone}" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1">
                       <i class="fa-solid fa-phone text-emerald-600 text-xs"></i>
                       <span>Appeler</span>
                     </a>
                   ` : `
-                    <button disabled class="w-full bg-slate-100 text-slate-400 font-medium py-2 rounded-xl text-xs text-center flex items-center justify-center space-x-1 cursor-not-allowed opacity-75">
-                      <i class="fa-solid fa-phone-slash text-xs"></i>
-                      <span>Non enregistré</span>
+                    <button disabled class="w-full bg-slate-100 text-slate-400 font-medium py-2.5 rounded-xl text-xs text-center flex items-center justify-center space-x-1 cursor-not-allowed opacity-75">
+                      <i class="fa-solid fa-phone-slash text-xs text-red-500"></i>
+                      <span class="text-red-500">Numéro indisponible</span>
                     </button>
                   `}
 
-                  <a href="${mapsUrl}" target="_blank" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1">
-                    <i class="fa-solid fa-map-location-dot text-[#6B125C] text-xs"></i>
-                    <span>Itinéraire</span>
+                  <a href="${mapsUrl}" target="_blank" class="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 text-[#6B125C] font-bold py-2.5 rounded-xl text-xs transition text-center flex items-center justify-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-diamond-turn-right text-pink-700 text-sm"></i>
+                    <span>Itinéraire GPS</span>
                   </a>
 
-                  <button onclick="window.app.addToCart('${medNameToOrder.replace(/'/g, "\\'")}', 3500, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-2 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1">
+                  <button onclick="window.app.addToCart('${medNameToOrder.replace(/'/g, "\\'")}', 3500, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-2.5 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>Commander</span>
                   </button>
@@ -736,14 +745,8 @@
       }
 
       renderPanierView() {
-        return `
-          <div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4">
-            <h2 class="text-lg font-bold text-[#6B125C]">Panier (${this.cart.length})</h2>
-            ${this.cart.length === 0 ? '<p class="text-xs text-slate-400">Votre panier est vide.</p>' : ''}
-          </div>
-        `;
+        return `<div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4"><h2 class="text-lg font-bold text-[#6B125C]">Panier (${this.cart.length})</h2>${this.cart.length === 0 ? '<p class="text-xs text-slate-400">Votre panier est vide.</p>' : ''}</div>`;
       }
-
       renderOrdoView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance</h2></div>`; }
       renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
       renderConseilsView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`; }
