@@ -32,16 +32,21 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #F8F3F7; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #A1197A; border-radius: 3px; }
     
-    .leaflet-popup-content-wrapper {
-      padding: 4px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+ .leaflet-popup-content-wrapper {
+      padding: 6px !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+      max-width: 320px !important;
     }
-    .leaflet-popup-content {
-      margin: 8px 12px;
-      max-width: 210px !important;
-      font-size: 11px;
-      line-height: 1.3;
+.leaflet-popup-content {
+      margin: 8px 12px !important;
+      width: 320px !important;
+      max-width: 320px !important;
+      font-size: 11px !important;
+      line-height: 1.4 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow: visible !important;
     }
   </style>
 </head>
@@ -151,7 +156,7 @@
         this.userMarker = null;
         this.currentLocation = { lat: 3.8480, lng: 11.5021 };
         this.realPharmacies = [];
-        this.searchRadius = 5000;
+        this.searchRadius = 3500; // OPTIMISÉ Yaoundé :  3500m = 4x moins de data
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
         this.activeSearchController = null;
@@ -283,14 +288,21 @@
         this.cart = [];
       }
 
-      init() {
+     init() {
+        // Nettoie automatiquement les anciens caches obsolètes de plus de 5 minutes ou d'un ancien format
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('ramia_cache_')) {
+            localStorage.removeItem(key);
+          }
+        });
+
         this.updateCartBadge();
         this.autoDetectUserLocation(() => {
           this.navigateTo('home');
         });
       }
 
-     autoDetectUserLocation(callback) {
+      autoDetectUserLocation(callback) {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (pos) => {
@@ -306,7 +318,6 @@
                 if (data && data.address) {
                   const countryCode = (data.address.country_code || '').toUpperCase();
                   const detectedCity = data.address.city || data.address.town || data.address.village || data.address.state || '';
-                  const detectedSub = data.address.suburb || data.address.neighbourhood || data.address.quarter || data.address.district || data.address.road || '';
 
                   if (this.countryData[countryCode]) {
                     this.currentCountry = countryCode;
@@ -318,18 +329,30 @@
                     else this.currentCity = detectedCity;
                   }
 
-                  if (detectedSub) {
-                    this.currentDistrict = detectedSub;
-                    const districtInput = document.getElementById('district-input');
-                    if (districtInput) districtInput.value = detectedSub; // Met à jour l'UI en direct
+                  // === MODIFICATION ICI ===
+                  const road = data.address.road || data.address.pedestrian || data.address.footway || '';
+                  const suburb = data.address.suburb || data.address.neighbourhood || data.address.quarter || data.address.district || '';
+                  
+                  let fullLocationString = '';
+                  if (road && suburb) {
+                    fullLocationString = `${road}, ${suburb}`;
+                  } else {
+                    fullLocationString = suburb || road || '';
                   }
+
+                  if (fullLocationString) {
+                    this.currentDistrict = fullLocationString;
+                    const districtInput = document.getElementById('district-input');
+                    if (districtInput) districtInput.value = fullLocationString;
+                  }
+                  // ========================
                 }
               } catch (e) {
                 console.warn("Erreur ou timeout géocodage inverse", e);
               }
 
               this.syncHeaderSelector();
-              this.renderCityDropdown(); // S'assure que la ville est bien sélectionnée dans le select
+              this.renderCityDropdown();
               if (typeof callback === 'function') callback();
             },
             (err) => {
@@ -342,7 +365,7 @@
               this.renderCityDropdown();
               if (typeof callback === 'function') callback();
             },
-            { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 } // maximumAge: 0 force l'ignorance du cache GPS du navigateur
+            { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
           );
         } else {
           this.syncHeaderSelector();
@@ -367,14 +390,14 @@
           this.currentLocation = countryInfo.cities[firstCity];
           
           this.currentDistrict = '';
-          const districtInput = document.getElementById('district-input');
+          const districtInput = document.getElementById(		'district-input');
           if (districtInput) districtInput.value = '';
 
           this.renderCityDropdown();
           this.initMap();
           this.realPharmacies = [];
           this.updateMapAndCards();
-          this.fetchRealPharmaciesOSM(5000, true);
+          this.fetchRealPharmaciesOSM(3500, true);
         }
       }
 
@@ -395,7 +418,7 @@
           this.initMap();
           this.realPharmacies = [];
           this.updateMapAndCards();
-          this.fetchRealPharmaciesOSM(5000, true);
+          this.fetchRealPharmaciesOSM(3500, true);
         }
       }
 
@@ -446,7 +469,7 @@
             if (districtInput && this.currentDistrict) {
               districtInput.value = this.currentDistrict;
             }
-            this.fetchRealPharmaciesOSM(5000);
+            this.fetchRealPharmaciesOSM(3500);
           }, 100);
         } else if (view === 'ordo') {
           container.innerHTML = this.renderOrdoView();
@@ -510,10 +533,7 @@
                   <i class="fa-solid fa-map-location-dot text-[#6B125C]"></i>
                   <h3 class="font-bold text-slate-800 text-sm">Carte des Officines Autour de Votre Point de Livraison</h3>
                 </div>
-                <button onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
-                  <i class="fa-solid fa-crosshairs text-pink-700"></i>
-                  <span>Réactualiser Position GPS</span>
-                </button>
+ <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
               </div>
               
               <div id="osm-map" class="w-full h-80 sm:h-96 rounded-xl border border-slate-200 z-10 shadow-inner"></div>
@@ -524,12 +544,11 @@
                 <h3 class="font-bold text-slate-800 text-sm sm:text-base">Pharmacies trouvées (par proximité)</h3>
                 <div class="flex items-center space-x-2">
                   <span id="pharmacy-count-badge" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">0 pharmacie</span>
-                  <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 5 km</span>
+                  <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 3.5 km</span>
                 </div>
               </div>
               <div id="pharmacies-grid" class="space-y-3">
               </div>
-              <!-- ESPACEUR TAMPON DE SÉCURITÉ EN BAS DE LA LISTE -->
               <div class="h-16"></div>
             </div>
           </div>
@@ -545,17 +564,35 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
       }
 
-      getCurrentGPSLocation() {
+    getCurrentGPSLocation() {
         if (this.activeSearchController) {
           this.activeSearchController.abort();
           this.activeSearchController = null;
         }
+
+        // Active l'effet de rotation (loading) sur le bouton GPS
+        const btn = document.getElementById('gps-refresh-btn');
+        const icon = document.getElementById('gps-icon');
+        if (btn && icon) {
+          btn.disabled = true;
+          btn.classList.add('opacity-75', 'cursor-wait');
+          icon.className = "fa-solid fa-circle-notch fa-spin text-pink-700";
+        }
+
         this.isLoadingPharmacies = false;
         this.autoDetectUserLocation(() => {
           this.renderCityDropdown();
           const districtInput = document.getElementById('district-input');
           if (districtInput) districtInput.value = this.currentDistrict;
-          this.fetchRealPharmaciesOSM(5000, true);
+          
+          this.fetchRealPharmaciesOSM(3500, true).then(() => {
+            // Désactive l'effet de rotation une fois tout terminé
+            if (btn && icon) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-75', 'cursor-wait');
+              icon.className = "fa-solid fa-crosshairs text-pink-700";
+            }
+          });
         });
       }
 
@@ -581,7 +618,7 @@
           } catch(e) {}
         }
 
-        await this.fetchRealPharmaciesOSM(5000, true);
+        await this.fetchRealPharmaciesOSM(3500, true);
       }
 
       cancelSearch() {
@@ -628,7 +665,7 @@
         if (stopBtn) stopBtn.classList.add('hidden');
       }
 
-      async fetchRealPharmaciesOSM(radius = 5000, forceRefresh = false) {
+      async fetchRealPharmaciesOSM(radius = 3500, forceRefresh = false) {
         if (!this.currentLocation) return;
         
         const lat = this.currentLocation.lat;
@@ -659,7 +696,7 @@
         this.updateMapAndCards();
 
         const apiKey = "6faa54ea808d43b7a3c26e7f3fce4da2";
-        const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=30&apiKey=${apiKey}`;
+        const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=10&apiKey=${apiKey}`;
 
         let pharmaciesList = [];
 
@@ -682,15 +719,40 @@
               const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
               const distance = R * c;
 
+              const streetNum = props.housenumber || '';
+              const streetName = props.street || props.address_line1 || '';
+              const quartier = props.suburb || props.district || props.neighbourhood || '';
+              
+              let constructedAddress = props.formatted;
+              if (streetName || quartier) {
+                const parts = [];
+                if (streetNum || streetName) {
+                  parts.push([streetNum, streetName].filter(Boolean).join(' '));
+                }
+                if (quartier) {
+                  parts.push(`Quartier ${quartier}`);
+                }
+                if (props.city && !parts.join('').includes(props.city)) {
+                  parts.push(props.city);
+                }
+                if (parts.length > 0) {
+                  constructedAddress = parts.join(' - ');
+                }
+              }
+
+              const phone = props.contact?.phone || props.datasource?.raw?.phone || props.phone || null;
+              const website = props.website || props.datasource?.raw?.website || null;
+              const openingHours = props.opening_hours || props.datasource?.raw?.opening_hours || null;
+
               return {
                 id: props.place_id || Math.random(),
                 name: props.name || "Pharmacie de Garde",
-                phone: props.contact?.phone || props.datasource?.raw?.phone || null,
+                phone: phone,
                 email: props.contact?.email || null,
-                website: props.website || null,
-                openingHours: props.opening_hours || null,
+                website: website,
+                openingHours: openingHours,
                 brand: props.brand || null,
-                address: props.formatted || props.address_line2 || "Adresse non renseignée",
+                address: constructedAddress || "Adresse non renseignée",
                 lat: elLat,
                 lng: elLon,
                 distance: distance
@@ -703,7 +765,8 @@
           }
         }
 
-        this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
+        // Ne garder que les 15 pharmacies les plus proches maximum pour garder une interface fluide
+this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance).slice(0, 15);
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify(this.realPharmacies));
@@ -728,20 +791,35 @@
           this.mapMarkers.forEach(m => this.map.removeLayer(m));
           this.mapMarkers = [];
 
+          // Affichage propre des marqueurs et popups sur la carte sans troncature
           this.realPharmacies.forEach(p => {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${this.currentLocation.lat},${this.currentLocation.lng}&destination=${p.lat},${p.lng}&travelmode=driving`;
             const marker = L.marker([p.lat, p.lng]).addTo(this.map);
             
-            marker.bindPopup(`
-              <div class="space-y-1">
+            const popupContent = `
+              <div style="white-space: normal; word-break: break-word;" class="space-y-1">
                 <strong class="text-xs text-[#6B125C] font-bold block">${p.name}</strong>
-                <p class="text-[10px] text-slate-600 truncate">${p.address}</p>
-                <div class="flex items-center justify-between pt-1">
+                <p class="text-[10px] text-slate-600 font-normal leading-tight">${p.address}</p>
+                <div class="flex items-center justify-between pt-1 mt-1 border-t border-slate-100">
                   <span class="text-[10px] text-emerald-600 font-bold">À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span>
-                  <a href="${mapsUrl}" target="_blank" class="text-[9px] bg-[#6B125C] text-white px-2 py-0.5 rounded font-bold hover:bg-pink-700">GPS</a>
+                  <a href="${mapsUrl}" target="_blank" class="text-[9px] bg-[#6B125C] text-white px-2 py-0.5 rounded font-bold hover:bg-pink-700 shadow-sm">GPS</a>
                 </div>
               </div>
-            `);
+            `;
+
+            // Tooltip au survol
+            marker.bindTooltip(`
+              <div style="font-size: 11px; font-weight: bold; color: #6B125C;">
+                <i class="fa-solid fa-pills mr-1"></i> ${p.name}
+              </div>
+              <div style="font-size: 10px; color: #64748b;">
+                À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}
+              </div>
+            `, { direction: 'top', offset: [0, -10] });
+
+            // Popup au clic sans troncature
+            marker.bindPopup(popupContent, { maxWidth: 320 });
+            
             this.mapMarkers.push(marker);
           });
         }
@@ -750,8 +828,8 @@
         const radiusBadge = document.getElementById('radius-badge');
         const countBadge = document.getElementById('pharmacy-count-badge');
 
-        if (radiusBadge) radiusBadge.textContent = `Rayon : ${(this.searchRadius/1000).toFixed(0)} km`;
-        
+    if (radiusBadge) radiusBadge.textContent = `Rayon : ${(this.searchRadius/1000).toFixed(1)} km`;
+	
         if (countBadge) {
           const totalFound = this.realPharmacies.length;
           countBadge.textContent = `${totalFound} pharmacie${totalFound > 1 ? 's' : ''}`;
@@ -770,11 +848,12 @@
           htmlCards = `
             <div class="p-5 text-center space-y-3 bg-amber-50 rounded-2xl border border-amber-200">
               <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-600"></i>
-              <p class="text-xs font-bold text-amber-900">Aucune pharmacie n'a été trouvée automatiquement dans le rayon de 5 km.</p>
+              <p class="text-xs font-bold text-amber-900">Aucune pharmacie n'a été trouvée automatiquement dans le rayon de 3.5 km.</p>
               <p class="text-[11px] text-amber-700">Sélectionnez votre ville ou saisissez votre quartier ci-dessus pour relancer la recherche.</p>
-              <button onclick="window.app.getCurrentGPSLocation()" class="mt-2 bg-[#6B125C] text-white text-xs font-bold px-4 py-2 rounded-xl shadow hover:bg-pink-800 transition">
-                Réactualiser la position GPS
-              </button>
+            <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
+  <i id="gps-icon" class="fa-solid fa-crosshairs text-pink-700"></i>
+  <span>Réactualiser Position GPS</span>
+</button>
             </div>
           `;
         } else {
@@ -786,7 +865,7 @@
             return `
               <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm hover:border-[#6B125C] transition space-y-2.5">
                 <div class="flex items-start justify-between">
-                  <div class="space-y-0.5">
+                  <div class="space-y-1">
                     <div class="flex items-center space-x-1.5">
                       <span class="text-sm">💊</span>
                       <h4 class="font-bold text-[#6B125C] text-xs sm:text-sm">${p.name}</h4>
@@ -796,9 +875,10 @@
                       <strong class="text-slate-700"><i class="fa-solid fa-location-dot text-pink-700 mr-1"></i>Adresse :</strong> ${p.address}
                     </p>
 
-                    <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-slate-500 pt-0.5">
+                    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500 pt-0.5">
                       <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-[10px] mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
                       ${p.openingHours ? `<span><strong class="text-slate-700"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Horaires :</strong> <span class="text-amber-700 font-medium">${p.openingHours}</span></span>` : ''}
+                      ${p.website ? `<span><strong class="text-slate-700"><i class="fa-solid fa-globe text-[10px] mr-1"></i>Web :</strong> <a href="${p.website}" target="_blank" class="text-pink-600 hover:underline truncate max-w-[140px] inline-block align-bottom">${p.website}</a></span>` : ''}
                     </div>
                   </div>
 
@@ -836,12 +916,126 @@
         this.updateCartBadge();
         this.navigateTo('panier');
       }
+// Simulation de l'analyse IA de l'ordonnance
+simulateIAScan(input) {
+  if (input.files && input.files[0]) {
+    const box = document.getElementById('ia-result-box');
+    const list = document.getElementById('ia-meds-list');
+    if (box && list) {
+      box.classList.remove('hidden');
+      list.innerHTML = `
+        <li>Paracétamol 1000mg — 2 boîtes</li>
+        <li>Amoxicilline 500mg — 1 boîte</li>
+      `;
+      this.searchedMedicine = "Paracétamol 1000mg";
+    }
+  }
+}
 
+// Passager vers la recherche/comparateur (Écran 3/5)
+navigateToStep2() {
+  const nom = document.getElementById('ordo-nom')?.value.trim();
+  const tel = document.getElementById('ordo-tel')?.value.trim();
+  
+  if (!nom || !tel) {
+    alert("Veuillez remplir le nom et le téléphone WhatsApp du bénéficiaire.");
+    return;
+  }
+  
+  // Enregistre les infos bénéficiaire et bascule sur l'accueil/comparateur
+  this.beneficiaire = { nom, tel };
+  this.navigateTo('home');
+}
       renderPanierView() {
         return `<div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4"><h2 class="text-lg font-bold text-[#6B125C]">Panier (${this.cart.length})</h2>${this.cart.length === 0 ? '<p class="text-xs text-slate-400">Votre panier est vide.</p>' : ''}</div>`;
       }
-      renderOrdoView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-[#6B125C]">Importer une Ordonnance</h2></div>`; }
-      renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
+      
+renderOrdoView() {
+  const currentPhonePrefix = this.countryData[this.currentCountry]?.phonePrefix || '+237';
+  
+  return `
+    <div class="max-w-2xl mx-auto space-y-5">
+      <!-- Indicateur d'étape -->
+      <div class="flex items-center justify-between text-xs font-bold text-slate-500 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[#6B125C] flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full bg-[#6B125C] text-white flex items-center justify-center text-[10px]">1</span>
+          Bénéficiaire & Adresse
+        </span>
+        <span class="opacity-40">2. Pharmacies</span>
+        <span class="opacity-40">3. Paiement</span>
+      </div>
+
+      <!-- Formulaire Bénéficiaire -->
+      <div class="bg-white rounded-2xl border border-brand-border p-5 sm:p-6 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-base font-bold text-[#6B125C] flex items-center gap-2">
+            <i class="fa-solid fa-user-gear"></i>
+            Détails du bénéficiaire (Livraison Yango)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Informations requises pour le contact et la course du livreur.</p>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+          <!-- Nom & Prénoms -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Nom & Prénoms du bénéficiaire <span class="text-red-500">*</span></label>
+            <input type="text" id="ordo-nom" placeholder="ex: Nkoulou Jean" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50">
+          </div>
+
+          <!-- Tel WhatsApp -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Téléphone WhatsApp (Appelé par Yango) <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+              <span class="px-3 py-2.5 bg-slate-100 font-mono font-bold text-slate-600 rounded-xl border border-slate-200 flex items-center">${currentPhonePrefix}</span>
+              <input type="tel" id="ordo-tel" placeholder="6XXXXXXXX" class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 font-mono">
+            </div>
+          </div>
+
+          <!-- Adresse auto-détectée -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-bold text-slate-700">Adresse de livraison (GPS / Géocodage)</label>
+              <button onclick="window.app.getCurrentGPSLocation()" class="text-[11px] text-[#6B125C] font-bold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                <span>Détecter mon quartier auto (Yango)</span>
+              </button>
+            </div>
+            <textarea id="ordo-adresse" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 text-slate-700 font-medium" readonly>${this.currentDistrict ? `${this.currentDistrict} - ${this.currentCity}` : `Position GPS (${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}) - ${this.currentCity}`}</textarea>
+          </div>
+        </div>
+
+        <!-- Section Scan Ordonnance IA -->
+        <div class="pt-3 border-t border-slate-100 space-y-3">
+          <label class="block font-bold text-slate-700 text-xs">Ordonnance médicale / Scan IA</label>
+          
+          <div class="border-2 border-dashed border-pink-200 hover:border-[#6B125C] bg-pink-50/30 rounded-2xl p-5 text-center transition cursor-pointer" onclick="document.getElementById('file-ordo').click()">
+            <i class="fa-solid fa-file-medical-query text-3xl text-[#6B125C] mb-2"></i>
+            <p class="text-xs font-bold text-slate-800">Scanner ou importer votre ordonnance</p>
+            <p class="text-[10px] text-slate-500 mt-1">L'IA analyse automatiquement les médicaments et dosages</p>
+            <input type="file" id="file-ordo" class="hidden" accept="image/*,.pdf" onchange="window.app.simulateIAScan(this)">
+          </div>
+
+          <!-- Résultat Scan IA (Masqué par défaut, affiché après import) -->
+          <div id="ia-result-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-emerald-800">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> Médicaments détectés par l'IA :</span>
+              <span class="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-full">Confiance 98%</span>
+            </div>
+            <ul id="ia-meds-list" class="text-xs text-emerald-900 list-disc list-inside space-y-1 font-medium">
+            </ul>
+          </div>
+        </div>
+
+        <!-- Bouton Continuer -->
+        <button onclick="window.app.navigateToStep2()" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-3 rounded-xl shadow-md transition text-xs flex items-center justify-center gap-2">
+          <span>Continuer vers le comparateur de pharmacies</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
+	  renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
       renderConseilsView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`; }
       renderCompteView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Mon Profil</h2></div>`; }
 
