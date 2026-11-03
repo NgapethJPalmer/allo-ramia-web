@@ -671,11 +671,20 @@
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
 
+        // Force l'effacement des anciens caches si forceRefresh est vrai
+        if (forceRefresh) {
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('ramia_cache_')) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
+
         const cacheKey = `ramia_cache_${lat.toFixed(2)}_${lng.toFixed(2)}_${radius}`;
         const cacheTimeKey = `${cacheKey}_time`;
         const cachedData = localStorage.getItem(cacheKey);
         const cachedTime = localStorage.getItem(cacheTimeKey);
-        const CACHE_TTL = 30 * 60 * 1000;
+        const CACHE_TTL = 20 * 60 * 1000;
 
         if (!forceRefresh && cachedData && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_TTL)) {
           this.realPharmacies = JSON.parse(cachedData);
@@ -695,8 +704,9 @@
         this.setSearchStateLoading();
         this.updateMapAndCards();
 
+        // Limite portée à 100 pour récupérer la totalité des pharmacies de la zone
         const apiKey = "6faa54ea808d43b7a3c26e7f3fce4da2";
-        const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=10&apiKey=${apiKey}`;
+        const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=100&apiKey=${apiKey}`;
 
         let pharmaciesList = [];
 
@@ -766,7 +776,7 @@
         }
 
         // Ne garder que les 15 pharmacies les plus proches maximum pour garder une interface fluide
-this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance).slice(0, 15);
+this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify(this.realPharmacies));
