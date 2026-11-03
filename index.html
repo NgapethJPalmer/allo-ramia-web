@@ -151,19 +151,20 @@
         this.currentCountry = 'CM';
         this.currentCity = 'Yaoundé';
         this.currentDistrict = ''; 
+        this.selectedTransport = 'all'; // Filter options: 'all', 'yango_moto', 'yango_taxi', 'gozem'
         this.map = null;
         this.mapMarkers = [];
         this.userMarker = null;
         this.currentLocation = { lat: 3.8480, lng: 11.5021 };
         this.realPharmacies = [];
-        this.searchRadius = 3500; // OPTIMISÉ Yaoundé :  3500m = 4x moins de data
+        this.searchRadius = 3500; 
         this.searchedMedicine = "";
         this.isLoadingPharmacies = false;
         this.activeSearchController = null;
 
         this.countryData = {
           'CM': { 
-            name: 'Cameroun', currency: 'XAF', phonePrefix: '+237',
+            name: 'Cameroun', currency: 'XAF', phonePrefix: '+237', paymentMethods: ['Orange Money', 'MTN Mobile Money', 'Espèces à la livraison'],
             cities: { 
               'Yaoundé': { lat: 3.8480, lng: 11.5021 },
               'Douala': { lat: 4.0511, lng: 9.7679 }, 
@@ -184,7 +185,7 @@
             }
           },
           'CI': { 
-            name: 'Côte d\'Ivoire', currency: 'FCFA', phonePrefix: '+225',
+            name: 'Côte d\'Ivoire', currency: 'FCFA', phonePrefix: '+225', paymentMethods: ['Orange Money', 'MTN MoMo', 'Wave'],
             cities: { 
               'Abidjan': { lat: 5.3600, lng: -4.0083 }, 
               'Bouaké': { lat: 7.6938, lng: -5.0303 },
@@ -197,7 +198,7 @@
             }
           },
           'GH': { 
-            name: 'Ghana', currency: 'GHS', phonePrefix: '+233', 
+            name: 'Ghana', currency: 'GHS', phonePrefix: '+233', paymentMethods: ['MTN MoMo', 'Vodafone Cash'],
             cities: { 
               'Accra': { lat: 5.6037, lng: -0.1870 }, 
               'Kumasi': { lat: 6.6885, lng: -1.6244 },
@@ -207,7 +208,7 @@
             } 
           },
           'GQ': { 
-            name: 'Guinée Équatoriale', currency: 'XAF', phonePrefix: '+240', 
+            name: 'Guinée Équatoriale', currency: 'XAF', phonePrefix: '+240', paymentMethods: ['Carte Bancaire', 'Espèces'],
             cities: { 
               'Malabo': { lat: 3.7504, lng: 8.7371 }, 
               'Bata': { lat: 1.8639, lng: 9.7658 },
@@ -215,7 +216,7 @@
             } 
           },
           'NG': { 
-            name: 'Nigeria', currency: 'NGN', phonePrefix: '+234', 
+            name: 'Nigeria', currency: 'NGN', phonePrefix: '+234', paymentMethods: ['Paystack', 'Virement Bancaire', 'USSD'],
             cities: { 
               'Lagos': { lat: 6.5244, lng: 3.3792 }, 
               'Abuja': { lat: 9.0765, lng: 7.3986 },
@@ -225,7 +226,7 @@
             } 
           },
           'BJ': { 
-            name: 'Bénin', currency: 'FCFA', phonePrefix: '+229',
+            name: 'Bénin', currency: 'FCFA', phonePrefix: '+229', paymentMethods: ['MTN MoMo', 'Moov Money'],
             cities: { 
               'Cotonou': { lat: 6.3654, lng: 2.4183 }, 
               'Porto-Novo': { lat: 6.4969, lng: 2.6288 },
@@ -234,7 +235,7 @@
             }
           },
           'CG': { 
-            name: 'Congo (Brazzaville)', currency: 'XAF', phonePrefix: '+242',
+            name: 'Congo (Brazzaville)', currency: 'XAF', phonePrefix: '+242', paymentMethods: ['MTN Money', 'Airtel Money'],
             cities: { 
               'Brazzaville': { lat: -4.2634, lng: 15.2429 }, 
               'Pointe-Noire': { lat: -4.7692, lng: 11.8664 },
@@ -242,7 +243,7 @@
             }
           },
           'CD': {
-            name: 'RDC (Kinshasa)', currency: 'CDF', phonePrefix: '+243',
+            name: 'RDC (Kinshasa)', currency: 'CDF', phonePrefix: '+243', paymentMethods: ['Airtel Money', 'Orange Money M-Pesa'],
             cities: { 
               'Kinshasa': { lat: -4.4419, lng: 15.2663 }, 
               'Lubumbashi': { lat: -11.6874, lng: 27.4847 },
@@ -251,7 +252,7 @@
             }
           },
           'GA': { 
-            name: 'Gabon', currency: 'XAF', phonePrefix: '+241',
+            name: 'Gabon', currency: 'XAF', phonePrefix: '+241', paymentMethods: ['Airtel Money', 'Moov Money'],
             cities: { 
               'Libreville': { lat: 0.3901, lng: 9.4544 }, 
               'Port-Gentil': { lat: -0.7193, lng: 8.7815 },
@@ -259,7 +260,7 @@
             }
           },
           'CF': {
-            name: 'Centrafrique (RCA)', currency: 'XAF', phonePrefix: '+236',
+            name: 'Centrafrique (RCA)', currency: 'XAF', phonePrefix: '+236', paymentMethods: ['Orange Money', 'Moov Money'],
             cities: { 
               'Bangui': { lat: 4.3947, lng: 18.5582 },
               'Berbérati': { lat: 4.2561, lng: 15.7921 },
@@ -267,7 +268,7 @@
             }
           },
           'TD': { 
-            name: 'Tchad', currency: 'XAF', phonePrefix: '+235',
+            name: 'Tchad', currency: 'XAF', phonePrefix: '+235', paymentMethods: ['Airtel Money', 'Tigo Cash'],
             cities: { 
               'N\'Djamena': { lat: 12.1348, lng: 15.0557 },
               'Moundou': { lat: 8.5670, lng: 16.0833 },
@@ -275,7 +276,7 @@
             }
           },
           'SN': {
-            name: 'Sénégal', currency: 'FCFA', phonePrefix: '+221',
+            name: 'Sénégal', currency: 'FCFA', phonePrefix: '+221', paymentMethods: ['Orange Money', 'Free Money', 'Wizall'],
             cities: { 
               'Dakar': { lat: 14.7167, lng: -17.4677 },
               'Thiès': { lat: 14.7910, lng: -16.9259 },
@@ -289,7 +290,6 @@
       }
 
      init() {
-        // Nettoie automatiquement les anciens caches obsolètes de plus de 5 minutes ou d'un ancien format
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('ramia_cache_')) {
             localStorage.removeItem(key);
@@ -329,7 +329,6 @@
                     else this.currentCity = detectedCity;
                   }
 
-                  // === MODIFICATION ICI ===
                   const road = data.address.road || data.address.pedestrian || data.address.footway || '';
                   const suburb = data.address.suburb || data.address.neighbourhood || data.address.quarter || data.address.district || '';
                   
@@ -345,7 +344,6 @@
                     const districtInput = document.getElementById('district-input');
                     if (districtInput) districtInput.value = fullLocationString;
                   }
-                  // ========================
                 }
               } catch (e) {
                 console.warn("Erreur ou timeout géocodage inverse", e);
@@ -390,7 +388,7 @@
           this.currentLocation = countryInfo.cities[firstCity];
           
           this.currentDistrict = '';
-          const districtInput = document.getElementById(		'district-input');
+          const districtInput = document.getElementById('district-input');
           if (districtInput) districtInput.value = '';
 
           this.renderCityDropdown();
@@ -420,6 +418,11 @@
           this.updateMapAndCards();
           this.fetchRealPharmaciesOSM(3500, true);
         }
+      }
+
+      changeTransportFilter(type) {
+        this.selectedTransport = type;
+        this.updateMapAndCards();
       }
 
       renderCityDropdown() {
@@ -513,15 +516,24 @@
                   </div>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
                   <div class="flex items-center space-x-2">
                     <span class="text-pink-100 font-semibold shrink-0">Ville :</span>
                     <select id="active-city-select" onchange="window.app.changeCity(this.value)" class="bg-white text-[#6B125C] font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer flex-1">
                     </select>
                   </div>
                   <div class="flex items-center space-x-2">
-                    <span class="text-pink-100 font-semibold shrink-0">Quartier / Secteur :</span>
-                    <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Bastos, Akwa, Kotto (optionnel)..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
+                    <span class="text-pink-100 font-semibold shrink-0">Secteur :</span>
+                    <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Bastos, Akwa..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-pink-100 font-semibold shrink-0">Livraison :</span>
+                    <select id="transport-select" onchange="window.app.changeTransportFilter(this.value)" class="bg-white text-[#6B125C] font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer flex-1">
+                      <option value="all" ${this.selectedTransport === 'all' ? 'selected' : ''}>⚡ Tous les transports</option>
+                      <option value="yango_moto" ${this.selectedTransport === 'yango_moto' ? 'selected' : ''}>🛵 Yango Moto uniquement</option>
+                      <option value="yango_taxi" ${this.selectedTransport === 'yango_taxi' ? 'selected' : ''}>🚕 Yango Taxi uniquement</option>
+                      <option value="gozem" ${this.selectedTransport === 'gozem' ? 'selected' : ''}>🏍️ Gozem uniquement</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -533,7 +545,10 @@
                   <i class="fa-solid fa-map-location-dot text-[#6B125C]"></i>
                   <h3 class="font-bold text-slate-800 text-sm">Carte des Officines Autour de Votre Point de Livraison</h3>
                 </div>
- <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
+                <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
+                  <i id="gps-icon" class="fa-solid fa-crosshairs text-pink-700"></i>
+                  <span>GPS Actif</span>
+                </button>
               </div>
               
               <div id="osm-map" class="w-full h-80 sm:h-96 rounded-xl border border-slate-200 z-10 shadow-inner"></div>
@@ -541,7 +556,7 @@
 
             <div class="bg-white rounded-2xl border border-brand-border p-4 sm:p-5 shadow-sm mb-6">
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-                <h3 class="font-bold text-slate-800 text-sm sm:text-base">Pharmacies trouvées (par proximité)</h3>
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base">Pharmacies trouvées (Devis comparatif & transport)</h3>
                 <div class="flex items-center space-x-2">
                   <span id="pharmacy-count-badge" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">0 pharmacie</span>
                   <span id="radius-badge" class="px-3 py-1 bg-pink-50 text-[#6B125C] font-bold text-xs rounded-full border border-pink-200">Rayon : 3.5 km</span>
@@ -564,13 +579,12 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
       }
 
-    getCurrentGPSLocation() {
+      getCurrentGPSLocation() {
         if (this.activeSearchController) {
           this.activeSearchController.abort();
           this.activeSearchController = null;
         }
 
-        // Active l'effet de rotation (loading) sur le bouton GPS
         const btn = document.getElementById('gps-refresh-btn');
         const icon = document.getElementById('gps-icon');
         if (btn && icon) {
@@ -586,7 +600,6 @@
           if (districtInput) districtInput.value = this.currentDistrict;
           
           this.fetchRealPharmaciesOSM(3500, true).then(() => {
-            // Désactive l'effet de rotation une fois tout terminé
             if (btn && icon) {
               btn.disabled = false;
               btn.classList.remove('opacity-75', 'cursor-wait');
@@ -671,7 +684,6 @@
         const lat = this.currentLocation.lat;
         const lng = this.currentLocation.lng;
 
-        // Force l'effacement des anciens caches si forceRefresh est vrai
         if (forceRefresh) {
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('ramia_cache_')) {
@@ -704,7 +716,6 @@
         this.setSearchStateLoading();
         this.updateMapAndCards();
 
-        // Limite portée à 100 pour récupérer la totalité des pharmacies de la zone
         const apiKey = "6faa54ea808d43b7a3c26e7f3fce4da2";
         const url = `https://api.geoapify.com/v2/places?categories=healthcare.pharmacy&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=100&apiKey=${apiKey}`;
 
@@ -727,7 +738,7 @@
                         Math.cos(lat * Math.PI / 180) * Math.cos(elLat * Math.PI / 180) * 
                         Math.sin(dLon/2) * Math.sin(dLon/2);
               const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-              const distance = R * c;
+              const distanceKm = R * c;
 
               const streetNum = props.housenumber || '';
               const streetName = props.street || props.address_line1 || '';
@@ -750,13 +761,18 @@
                 }
               }
 
+              let pharmacyName = props.name || props.amenity || props.brand || null;
+              if (!pharmacyName || pharmacyName.toLowerCase() === 'pharmacy' || pharmacyName.toLowerCase() === 'pharmacie') {
+                pharmacyName = quartier ? `Pharmacie (${quartier})` : "Pharmacie de Proximité";
+              }
+
               const phone = props.contact?.phone || props.datasource?.raw?.phone || props.phone || null;
               const website = props.website || props.datasource?.raw?.website || null;
               const openingHours = props.opening_hours || props.datasource?.raw?.opening_hours || null;
 
               return {
                 id: props.place_id || Math.random(),
-                name: props.name || "Pharmacie de Garde",
+                name: pharmacyName,
                 phone: phone,
                 email: props.contact?.email || null,
                 website: website,
@@ -765,8 +781,38 @@
                 address: constructedAddress || "Adresse non renseignée",
                 lat: elLat,
                 lng: elLon,
-                distance: distance
+                distance: distanceKm
               };
+            });
+
+            this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
+            this.isLoadingPharmacies = false;
+            this.resetSearchButtons();
+            this.initMap();
+            this.updateMapAndCards();
+
+            // Calibrage en arrière-plan avec l'API Routing Geoapify
+            data.features.forEach(async (f) => {
+              const props = f.properties;
+              const elLat = props.lat;
+              const elLon = props.lon;
+              const pId = props.place_id;
+
+              try {
+                const routeUrl = `https://api.geoapify.com/v1/routing?waypoints=${lat},${lng}|${elLat},${elLon}&mode=drive&apiKey=${apiKey}`;
+                const routeRes = await fetch(routeUrl);
+                const routeData = await routeRes.json();
+                if (routeData && routeData.features && routeData.features.length > 0) {
+                  const exactDistanceKm = routeData.features[0].properties.distance / 1000;
+                  
+                  const targetPharmacy = this.realPharmacies.find(p => p.id === pId);
+                  if (targetPharmacy) {
+                    targetPharmacy.distance = exactDistanceKm;
+                    this.realPharmacies.sort((a, b) => a.distance - b.distance);
+                    this.updateMapAndCards();
+                  }
+                }
+              } catch (e) {}
             });
           }
         } catch (err) {
@@ -774,9 +820,6 @@
             console.warn("Erreur lors de la récupération Geoapify", err);
           }
         }
-
-        // Ne garder que les 15 pharmacies les plus proches maximum pour garder une interface fluide
-this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify(this.realPharmacies));
@@ -801,7 +844,6 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
           this.mapMarkers.forEach(m => this.map.removeLayer(m));
           this.mapMarkers = [];
 
-          // Affichage propre des marqueurs et popups sur la carte sans troncature
           this.realPharmacies.forEach(p => {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${this.currentLocation.lat},${this.currentLocation.lng}&destination=${p.lat},${p.lng}&travelmode=driving`;
             const marker = L.marker([p.lat, p.lng]).addTo(this.map);
@@ -817,7 +859,6 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
               </div>
             `;
 
-            // Tooltip au survol
             marker.bindTooltip(`
               <div style="font-size: 11px; font-weight: bold; color: #6B125C;">
                 <i class="fa-solid fa-pills mr-1"></i> ${p.name}
@@ -827,9 +868,7 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
               </div>
             `, { direction: 'top', offset: [0, -10] });
 
-            // Popup au clic sans troncature
             marker.bindPopup(popupContent, { maxWidth: 320 });
-            
             this.mapMarkers.push(marker);
           });
         }
@@ -838,7 +877,7 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
         const radiusBadge = document.getElementById('radius-badge');
         const countBadge = document.getElementById('pharmacy-count-badge');
 
-    if (radiusBadge) radiusBadge.textContent = `Rayon : ${(this.searchRadius/1000).toFixed(1)} km`;
+        if (radiusBadge) radiusBadge.textContent = `Rayon : ${(this.searchRadius/1000).toFixed(1)} km`;
 	
         if (countBadge) {
           const totalFound = this.realPharmacies.length;
@@ -860,20 +899,125 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
               <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-600"></i>
               <p class="text-xs font-bold text-amber-900">Aucune pharmacie n'a été trouvée automatiquement dans le rayon de 3.5 km.</p>
               <p class="text-[11px] text-amber-700">Sélectionnez votre ville ou saisissez votre quartier ci-dessus pour relancer la recherche.</p>
-            <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200">
-  <i id="gps-icon" class="fa-solid fa-crosshairs text-pink-700"></i>
-  <span>Réactualiser Position GPS</span>
-</button>
+              <button id="gps-refresh-btn" onclick="window.app.getCurrentGPSLocation()" class="text-xs bg-pink-50 text-[#6B125C] hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 border border-pink-200 mx-auto">
+                <i id="gps-icon" class="fa-solid fa-crosshairs text-pink-700"></i>
+                <span>Réactualiser Position GPS</span>
+              </button>
             </div>
           `;
         } else {
+          const currentCountryInfo = this.countryData[this.currentCountry] || this.countryData['CM'];
+          const paymentList = currentCountryInfo.paymentMethods || ['Mobile Money'];
+          const currencyLabel = currentCountryInfo.currency || 'XAF';
+
           htmlCards = this.realPharmacies.map(p => {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${this.currentLocation.lat},${this.currentLocation.lng}&destination=${p.lat},${p.lng}&travelmode=driving`;
             const distLabel = p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km';
-            const medNameToOrder = this.searchedMedicine ? this.searchedMedicine : "Médicament demandé";
+            
+            const searchedMedName = this.searchedMedicine ? this.searchedMedicine : "Médicament demandé";
+            
+            const basePrice = 2500; 
+            const randomVariation = ((p.id ? String(p.id).charCodeAt(0) : 5) % 5) * 150; 
+            const medPrice = basePrice + randomVariation;
+
+            const serviceFee = Math.round(medPrice * 0.05);
+
+            const distKm = p.distance;
+            const yangoMotoPrice = Math.max(300, Math.round(distKm * 250 / 100) * 100); 
+            const yangoTaxiPrice = Math.max(1000, Math.round(distKm * 500 / 100) * 100); 
+            const gozemPrice = Math.max(350, Math.round(distKm * 280 / 100) * 100);     
+
+            const totalMoto = medPrice + serviceFee + yangoMotoPrice;
+            const totalTaxi = medPrice + serviceFee + yangoTaxiPrice;
+            const totalGozem = medPrice + serviceFee + gozemPrice;
+
+            // Détermination du prix de commande par défaut selon le filtre
+            let orderPrice = totalMoto;
+            if (this.selectedTransport === 'yango_taxi') orderPrice = totalTaxi;
+            if (this.selectedTransport === 'gozem') orderPrice = totalGozem;
+
+            // Génération dynamique du bloc de devis transport (Tous ou sélectionné)
+            let transportHtml = "";
+            if (this.selectedTransport === 'all') {
+              transportHtml = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm space-y-1">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-medium border-b border-slate-100 pb-0.5">
+                      <span>🛵 Yango Moto</span>
+                      <span class="text-slate-700">${yangoMotoPrice.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-0.5">
+                      <span class="font-bold text-slate-600 text-[10px]">Total :</span>
+                      <span class="font-black text-emerald-700">${totalMoto.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm space-y-1">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-medium border-b border-slate-100 pb-0.5">
+                      <span>🚕 Yango Taxi</span>
+                      <span class="text-slate-700">${yangoTaxiPrice.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-0.5">
+                      <span class="font-bold text-slate-600 text-[10px]">Total :</span>
+                      <span class="font-black text-emerald-700">${totalTaxi.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-white p-2 rounded-lg border border-slate-200 shadow-sm space-y-1">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-medium border-b border-slate-100 pb-0.5">
+                      <span>🏍️ Gozem</span>
+                      <span class="text-slate-700">${gozemPrice.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-0.5">
+                      <span class="font-bold text-slate-600 text-[10px]">Total :</span>
+                      <span class="font-black text-emerald-700">${totalGozem.toLocaleString()} ${currencyLabel}</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            } else if (this.selectedTransport === 'yango_moto') {
+              transportHtml = `
+                <div class="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-sm flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <span class="text-xs font-bold text-slate-800 block">🛵 Yango Moto sélectionné</span>
+                    <span class="text-[10px] text-slate-500">Course estimée : ${yangoMotoPrice.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-slate-500 block">Total général :</span>
+                    <span class="font-black text-emerald-700 text-sm">${totalMoto.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                </div>
+              `;
+            } else if (this.selectedTransport === 'yango_taxi') {
+              transportHtml = `
+                <div class="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-sm flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <span class="text-xs font-bold text-slate-800 block">🚕 Yango Taxi sélectionné</span>
+                    <span class="text-[10px] text-slate-500">Course estimée : ${yangoTaxiPrice.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-slate-500 block">Total général :</span>
+                    <span class="font-black text-emerald-700 text-sm">${totalTaxi.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                </div>
+              `;
+            } else if (this.selectedTransport === 'gozem') {
+              transportHtml = `
+                <div class="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-sm flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <span class="text-xs font-bold text-slate-800 block">🏍️ Gozem sélectionné</span>
+                    <span class="text-[10px] text-slate-500">Course estimée : ${gozemPrice.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-slate-500 block">Total général :</span>
+                    <span class="font-black text-emerald-700 text-sm">${totalGozem.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+                </div>
+              `;
+            }
 
             return `
-              <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm hover:border-[#6B125C] transition space-y-2.5">
+              <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm hover:border-[#6B125C] transition space-y-3">
                 <div class="flex items-start justify-between">
                   <div class="space-y-1">
                     <div class="flex items-center space-x-1.5">
@@ -888,16 +1032,38 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
                     <div class="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500 pt-0.5">
                       <span><strong class="text-slate-700"><i class="fa-solid fa-phone text-[10px] mr-1"></i>Tél :</strong> ${p.phone ? `<a href="tel:${p.phone}" class="text-emerald-700 font-bold hover:underline">${p.phone}</a>` : '<span class="italic text-slate-400">Non renseigné</span>'}</span>
                       ${p.openingHours ? `<span><strong class="text-slate-700"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Horaires :</strong> <span class="text-amber-700 font-medium">${p.openingHours}</span></span>` : ''}
-                      ${p.website ? `<span><strong class="text-slate-700"><i class="fa-solid fa-globe text-[10px] mr-1"></i>Web :</strong> <a href="${p.website}" target="_blank" class="text-pink-600 hover:underline truncate max-w-[140px] inline-block align-bottom">${p.website}</a></span>` : ''}
                     </div>
                   </div>
 
                   <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[11px] rounded-full border border-emerald-200 shrink-0">
-                    À ${distLabel}
+                    À ${distLabel} de la livraison
                   </span>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                <!-- DEVIS DETAILLE -->
+                <div class="bg-pink-50/60 border border-pink-100 rounded-xl p-3 space-y-2 text-xs">
+                  <div class="flex items-center justify-between font-bold text-slate-800 border-b border-pink-200/60 pb-1.5">
+                    <span class="text-[#6B125C] truncate max-w-[200px]"><i class="fa-solid fa-pills mr-1"></i> ${searchedMedName}</span>
+                    <span class="text-slate-700 bg-white px-2 py-0.5 rounded border border-pink-200">${medPrice.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+
+                  <!-- Frais de service Allo Ramia (5%) -->
+                  <div class="flex items-center justify-between text-[11px] text-slate-600 bg-white/60 px-2 py-1 rounded">
+                    <span><i class="fa-solid fa-handshake-angle text-[#6B125C] mr-1"></i> Frais de service Allo Ramia (5%) :</span>
+                    <span class="font-bold text-[#6B125C]">+ ${serviceFee.toLocaleString()} ${currencyLabel}</span>
+                  </div>
+
+                  <!-- Grille ou Transporteur Sélectionné -->
+                  ${transportHtml}
+
+                  <!-- Moyens de paiement disponibles -->
+                  <div class="pt-1.5 flex items-center justify-between text-[10px] text-slate-500 border-t border-pink-200/60">
+                    <span class="font-semibold text-slate-700"><i class="fa-solid fa-wallet text-pink-700 mr-1"></i> Paiement accepté :</span>
+                    <span class="font-medium text-[#6B125C]">${paymentList.join(' • ')}</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
                   <a href="tel:${p.phone || '#'}" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-1.5 rounded-lg text-[11px] transition text-center flex items-center justify-center space-x-1 ${!p.phone ? 'opacity-50 pointer-events-none' : ''}">
                     <i class="fa-solid fa-phone text-emerald-600 text-[10px]"></i>
                     <span>Appeler</span>
@@ -908,7 +1074,7 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
                     <span>Itinéraire</span>
                   </a>
 
-                  <button onclick="window.app.addToCart('${medNameToOrder.replace(/'/g, "\\'")}', 3500, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-1.5 rounded-lg text-[11px] shadow transition flex items-center justify-center space-x-1">
+                  <button onclick="window.app.addToCart('${searchedMedName.replace(/'/g, "\\'")}', ${orderPrice}, '${p.name.replace(/'/g, "\\'")}')" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-1.5 rounded-lg text-[11px] shadow transition flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-cart-plus text-[10px]"></i>
                     <span>Commander</span>
                   </button>
@@ -926,126 +1092,118 @@ this.realPharmacies = pharmaciesList.sort((a, b) => a.distance - b.distance);
         this.updateCartBadge();
         this.navigateTo('panier');
       }
-// Simulation de l'analyse IA de l'ordonnance
-simulateIAScan(input) {
-  if (input.files && input.files[0]) {
-    const box = document.getElementById('ia-result-box');
-    const list = document.getElementById('ia-meds-list');
-    if (box && list) {
-      box.classList.remove('hidden');
-      list.innerHTML = `
-        <li>Paracétamol 1000mg — 2 boîtes</li>
-        <li>Amoxicilline 500mg — 1 boîte</li>
-      `;
-      this.searchedMedicine = "Paracétamol 1000mg";
-    }
-  }
-}
 
-// Passager vers la recherche/comparateur (Écran 3/5)
-navigateToStep2() {
-  const nom = document.getElementById('ordo-nom')?.value.trim();
-  const tel = document.getElementById('ordo-tel')?.value.trim();
-  
-  if (!nom || !tel) {
-    alert("Veuillez remplir le nom et le téléphone WhatsApp du bénéficiaire.");
-    return;
-  }
-  
-  // Enregistre les infos bénéficiaire et bascule sur l'accueil/comparateur
-  this.beneficiaire = { nom, tel };
-  this.navigateTo('home');
-}
+      simulateIAScan(input) {
+        if (input.files && input.files[0]) {
+          const box = document.getElementById('ia-result-box');
+          const list = document.getElementById('ia-meds-list');
+          if (box && list) {
+            box.classList.remove('hidden');
+            list.innerHTML = `
+              <li>Paracétamol 1000mg — 2 boîtes</li>
+              <li>Amoxicilline 500mg — 1 boîte</li>
+            `;
+            this.searchedMedicine = "Paracétamol 1000mg";
+          }
+        }
+      }
+
+      navigateToStep2() {
+        const nom = document.getElementById('ordo-nom')?.value.trim();
+        const tel = document.getElementById('ordo-tel')?.value.trim();
+        
+        if (!nom || !tel) {
+          alert("Veuillez remplir le nom et le téléphone WhatsApp du bénéficiaire.");
+          return;
+        }
+        
+        this.beneficiaire = { nom, tel };
+        this.navigateTo('home');
+      }
+
       renderPanierView() {
         return `<div class="bg-white rounded-2xl p-6 shadow-sm border border-brand-border space-y-4"><h2 class="text-lg font-bold text-[#6B125C]">Panier (${this.cart.length})</h2>${this.cart.length === 0 ? '<p class="text-xs text-slate-400">Votre panier est vide.</p>' : ''}</div>`;
       }
       
-renderOrdoView() {
-  const currentPhonePrefix = this.countryData[this.currentCountry]?.phonePrefix || '+237';
-  
-  return `
-    <div class="max-w-2xl mx-auto space-y-5">
-      <!-- Indicateur d'étape -->
-      <div class="flex items-center justify-between text-xs font-bold text-slate-500 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[#6B125C] flex items-center gap-1.5">
-          <span class="w-5 h-5 rounded-full bg-[#6B125C] text-white flex items-center justify-center text-[10px]">1</span>
-          Bénéficiaire & Adresse
-        </span>
-        <span class="opacity-40">2. Pharmacies</span>
-        <span class="opacity-40">3. Paiement</span>
-      </div>
-
-      <!-- Formulaire Bénéficiaire -->
-      <div class="bg-white rounded-2xl border border-brand-border p-5 sm:p-6 shadow-sm space-y-4">
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-base font-bold text-[#6B125C] flex items-center gap-2">
-            <i class="fa-solid fa-user-gear"></i>
-            Détails du bénéficiaire (Livraison Yango)
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Informations requises pour le contact et la course du livreur.</p>
-        </div>
-
-        <div class="space-y-3.5 text-xs">
-          <!-- Nom & Prénoms -->
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Nom & Prénoms du bénéficiaire <span class="text-red-500">*</span></label>
-            <input type="text" id="ordo-nom" placeholder="ex: Nkoulou Jean" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50">
-          </div>
-
-          <!-- Tel WhatsApp -->
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Téléphone WhatsApp (Appelé par Yango) <span class="text-red-500">*</span></label>
-            <div class="flex gap-2">
-              <span class="px-3 py-2.5 bg-slate-100 font-mono font-bold text-slate-600 rounded-xl border border-slate-200 flex items-center">${currentPhonePrefix}</span>
-              <input type="tel" id="ordo-tel" placeholder="6XXXXXXXX" class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 font-mono">
+      renderOrdoView() {
+        const currentPhonePrefix = this.countryData[this.currentCountry]?.phonePrefix || '+237';
+        
+        return `
+          <div class="max-w-2xl mx-auto space-y-5">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-500 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+              <span class="text-[#6B125C] flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-[#6B125C] text-white flex items-center justify-center text-[10px]">1</span>
+                Bénéficiaire & Adresse
+              </span>
+              <span class="opacity-40">2. Pharmacies</span>
+              <span class="opacity-40">3. Paiement</span>
             </div>
-          </div>
 
-          <!-- Adresse auto-détectée -->
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="font-bold text-slate-700">Adresse de livraison (GPS / Géocodage)</label>
-              <button onclick="window.app.getCurrentGPSLocation()" class="text-[11px] text-[#6B125C] font-bold hover:underline flex items-center gap-1">
-                <i class="fa-solid fa-location-crosshairs"></i>
-                <span>Détecter mon quartier auto (Yango)</span>
+            <div class="bg-white rounded-2xl border border-brand-border p-5 sm:p-6 shadow-sm space-y-4">
+              <div class="border-b border-slate-100 pb-3">
+                <h2 class="text-base font-bold text-[#6B125C] flex items-center gap-2">
+                  <i class="fa-solid fa-user-gear"></i>
+                  Détails du bénéficiaire (Livraison Yango)
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Informations requises pour le contact et la course du livreur.</p>
+              </div>
+
+              <div class="space-y-3.5 text-xs">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Nom & Prénoms du bénéficiaire <span class="text-red-500">*</span></label>
+                  <input type="text" id="ordo-nom" placeholder="ex: Nkoulou Jean" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50">
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Téléphone WhatsApp (Appelé par Yango) <span class="text-red-500">*</span></label>
+                  <div class="flex gap-2">
+                    <span class="px-3 py-2.5 bg-slate-100 font-mono font-bold text-slate-600 rounded-xl border border-slate-200 flex items-center">${currentPhonePrefix}</span>
+                    <input type="tel" id="ordo-tel" placeholder="6XXXXXXXX" class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 font-mono">
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="font-bold text-slate-700">Adresse de livraison (GPS / Géocodage)</label>
+                    <button onclick="window.app.getCurrentGPSLocation()" class="text-[11px] text-[#6B125C] font-bold hover:underline flex items-center gap-1">
+                      <i class="fa-solid fa-location-crosshairs"></i>
+                      <span>Détecter mon quartier auto (Yango)</span>
+                    </button>
+                  </div>
+                  <textarea id="ordo-adresse" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 text-slate-700 font-medium" readonly>${this.currentDistrict ? `${this.currentDistrict} - ${this.currentCity}` : `Position GPS (${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}) - ${this.currentCity}`}</textarea>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 space-y-3">
+                <label class="block font-bold text-slate-700 text-xs">Ordonnance médicale / Scan IA</label>
+                
+                <div class="border-2 border-dashed border-pink-200 hover:border-[#6B125C] bg-pink-50/30 rounded-2xl p-5 text-center transition cursor-pointer" onclick="document.getElementById('file-ordo').click()">
+                  <i class="fa-solid fa-file-medical-query text-3xl text-[#6B125C] mb-2"></i>
+                  <p class="text-xs font-bold text-slate-800">Scanner ou importer votre ordonnance</p>
+                  <p class="text-[10px] text-slate-500 mt-1">L'IA analyse automatiquement les médicaments et dosages</p>
+                  <input type="file" id="file-ordo" class="hidden" accept="image/*,.pdf" onchange="window.app.simulateIAScan(this)">
+                </div>
+
+                <div id="ia-result-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-2">
+                  <div class="flex items-center justify-between text-xs font-bold text-emerald-800">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> Médicaments détectés par l'IA :</span>
+                    <span class="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-full">Confiance 98%</span>
+                  </div>
+                  <ul id="ia-meds-list" class="text-xs text-emerald-900 list-disc list-inside space-y-1 font-medium">
+                  </ul>
+                </div>
+              </div>
+
+              <button onclick="window.app.navigateToStep2()" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-3 rounded-xl shadow-md transition text-xs flex items-center justify-center gap-2">
+                <span>Continuer vers le comparateur de pharmacies</span>
+                <i class="fa-solid fa-arrow-right"></i>
               </button>
             </div>
-            <textarea id="ordo-adresse" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#6B125C] bg-slate-50/50 text-slate-700 font-medium" readonly>${this.currentDistrict ? `${this.currentDistrict} - ${this.currentCity}` : `Position GPS (${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}) - ${this.currentCity}`}</textarea>
           </div>
-        </div>
+        `;
+      }
 
-        <!-- Section Scan Ordonnance IA -->
-        <div class="pt-3 border-t border-slate-100 space-y-3">
-          <label class="block font-bold text-slate-700 text-xs">Ordonnance médicale / Scan IA</label>
-          
-          <div class="border-2 border-dashed border-pink-200 hover:border-[#6B125C] bg-pink-50/30 rounded-2xl p-5 text-center transition cursor-pointer" onclick="document.getElementById('file-ordo').click()">
-            <i class="fa-solid fa-file-medical-query text-3xl text-[#6B125C] mb-2"></i>
-            <p class="text-xs font-bold text-slate-800">Scanner ou importer votre ordonnance</p>
-            <p class="text-[10px] text-slate-500 mt-1">L'IA analyse automatiquement les médicaments et dosages</p>
-            <input type="file" id="file-ordo" class="hidden" accept="image/*,.pdf" onchange="window.app.simulateIAScan(this)">
-          </div>
-
-          <!-- Résultat Scan IA (Masqué par défaut, affiché après import) -->
-          <div id="ia-result-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-2">
-            <div class="flex items-center justify-between text-xs font-bold text-emerald-800">
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> Médicaments détectés par l'IA :</span>
-              <span class="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-full">Confiance 98%</span>
-            </div>
-            <ul id="ia-meds-list" class="text-xs text-emerald-900 list-disc list-inside space-y-1 font-medium">
-            </ul>
-          </div>
-        </div>
-
-        <!-- Bouton Continuer -->
-        <button onclick="window.app.navigateToStep2()" class="w-full bg-[#6B125C] hover:bg-[#851264] text-white font-bold py-3 rounded-xl shadow-md transition text-xs flex items-center justify-center gap-2">
-          <span>Continuer vers le comparateur de pharmacies</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-    </div>
-  `;
-}
-	  renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
+      renderSosView() { return `<div class="bg-white rounded-2xl p-6 text-center"><h2 class="text-lg font-bold text-red-600">Urgence SOS (+237 677 550 909)</h2></div>`; }
       renderConseilsView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Conseils Médicaux</h2></div>`; }
       renderCompteView() { return `<div class="bg-white rounded-2xl p-6"><h2 class="text-lg font-bold text-[#6B125C]">Mon Profil</h2></div>`; }
 
