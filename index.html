@@ -3,20 +3,23 @@
 <head>
   <!-- 
     ================================================================================
-    ALLO RAMIA - ARCHITECTURE TECHNIQUE COMPLÈTE V5
+    ALLO RAMIA - ARCHITECTURE TECHNIQUE COMPLÈTE V5 & V6
     ================================================================================
-    1. Intégration du Moteur & Catalogue Laborex (Étape 2 - 100 Références)
-       - Table de consultation des 100 médicaments essentiels avec codes grossiste, prix HT/TTC
+    1. Intégration du Moteur & Catalogue Laborex (Étape 2 - 200 Références)
+       - Table de consultation des médicaments essentiels avec codes grossiste, prix HT/TTC
          officiels au Cameroun, taux de disponibilité et filtres interactifs en direct.
     2. Base Géographique Internationale Complète (12 Pays & Villes)
-       - Coordonnées GPS, indicatifs et modes de paiement pour le Cameroun (Douala, Yaoundé, Bafoussam, Garoua, etc.),
+       - Coordonnées GPS, indicatifs et modes de paiement pour le Cameroun (Douala, Yaoundé, Bafoussam, etc.),
          Côte d'Ivoire, Ghana, Nigeria, Gabon, RCA, Congo, RDC, Sénégal, etc.
     3. Moteur Geoapify & Routing Bimodal
        - Détection dynamique des officines et calcul des frais de transport (Yango Moto, Yango Taxi, Gozem)
-         avec option « Meilleur Choix ».
+         avec option « Meilleur Choix » et itinéraires Google Maps précis.
     4. Tunnel de Commande V5 Complètement Déroulé (Étapes 1 à 6)
-       - Choix du mode (Livraison vs Retrait), commission de service (15%), paiement local/international
-         (Mobile Money, Espèces, Stripe) et génération du message WhatsApp structuré.
+       - Choix du mode (Livraison vs Retrait), commission de service optimisée (5%), paiement local/international
+         (MTN MoMo, Orange Money, Espèces, Stripe) et génération du message WhatsApp structuré.
+    5. Expérience Utilisateur (UX) Avancée
+       - Splash Screen animé de 5 secondes en premier plan, masquage de la navbar au démarrage,
+         Scan d'ordonnance par IA et double redirection ergonomique.
     ================================================================================
   -->
 
@@ -97,55 +100,65 @@
     <span id="toast-message">Action effectuée avec succès !</span>
   </div>
 
-  <!-- HEADER ET BARRE SUPERIEURE GLOBAL -->
-  <header class="bg-[#6B125C] text-white shadow-xl sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="window.app.navigateTo('home')">
-        <div class="w-10 h-10 rounded-xl bg-white text-[#6B125C] flex items-center justify-center font-black text-xl shadow">💊</div>
-        <div>
-          <h1 id="header-title" class="text-xl font-bold tracking-tight">Allo Ramia </h1>
-          <p class="text-[10px] text-pink-200 uppercase tracking-widest font-medium">Vos médicaments livrés en un clin d'œil ⚡</p>
+  <!-- ============================================================================== -->
+  <!-- SPLASH SCREEN ANIMÉ (HTML BRUT POUR AFFICHAGE IMMÉDIAT DÈS LE CTRL + F5) -->
+  <!-- ============================================================================== -->
+  <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#6B125C] via-[#851264] to-[#A1197A] text-white p-6 transition-opacity duration-700 opacity-100">
+    <div class="max-w-lg w-full text-center space-y-5 transform transition-all duration-700 scale-100">
+      
+      <!-- Logo / Icône Animée -->
+      <div class="w-24 h-24 rounded-3xl bg-white text-[#6B125C] flex items-center justify-center mx-auto text-5xl shadow-2xl ring-8 ring-white/10 animate-pulse">
+        💊
+      </div>
+
+      <!-- Titre et Slogan -->
+      <div class="space-y-1">
+        <h1 class="text-3xl font-black tracking-tight">Allo Ramia</h1>
+        <p class="text-xs font-bold uppercase tracking-widest text-pink-200">Plateforme Pharmaceutique Internationale 24/7</p>
+      </div>
+
+      <!-- Encadré Message Centré -->
+      <div class="bg-white text-slate-800 p-5 rounded-3xl shadow-2xl space-y-2 text-center border border-pink-100 flex flex-col items-center justify-center">
+        <div class="flex items-center justify-center space-x-2 font-black text-sm text-[#6B125C] w-full text-center">
+          <span>🌍</span>
+          <span>Commandez au Cameroun & depuis l'étranger</span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium text-center">
+          Paiement sécurisé à distance via <strong class="text-[#6B125C]">MTN Mobile Money</strong> & <strong class="text-[#6B125C]">Orange Money</strong> & livraison ultra-rapide <strong class="text-slate-900">à domicile, à l'hôpital ou au bureau</strong> via <span class="text-[#6B125C] font-bold">Yango Moto</span>, <span class="text-[#6B125C] font-bold">Yango Taxi</span> ou <span class="text-[#6B125C] font-bold">Gozem</span>.
+        </p>
+      </div>
+
+      <!-- Badges Partenaires -->
+      <div class="pt-1">
+        <p class="text-[10px] uppercase tracking-widest font-bold text-pink-200 mb-2">Partenaires & Réseau Officiel</p>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <span class="px-3 py-1 bg-yellow-400 text-slate-900 text-[11px] font-black rounded-full shadow-md">🟡 MTN MoMo</span>
+          <span class="px-3 py-1 bg-orange-500 text-white text-[11px] font-black rounded-full shadow-md">🟠 Orange Money</span>
+          <span class="px-3 py-1 bg-red-500 text-white text-[11px] font-black rounded-full shadow-md">🚗 Yango</span>
+          <span class="px-3 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-full shadow-md">💊 Laborex</span>
         </div>
       </div>
 
-      <!-- SELECTEUR DE PAYS ET STATUS -->
-      <div class="flex items-center space-x-3">
-        <select id="country-selector" onchange="window.app.changeCountry(this.value)" class="bg-[#851264] text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-pink-400/30 focus:outline-none cursor-pointer shadow-inner">
-          <option value="CM" selected>🇨🇲 Cameroun</option>
-          <option value="CI">🇨🇮 Côte d'Ivoire</option>
-          <option value="GH">🇬🇭 Ghana</option>
-          <option value="GQ">🇬🇶 Guinée Équatoriale</option>
-          <option value="NG">🇳🇬 Nigeria</option>
-          <option value="BJ">🇧🇯 Bénin</option>
-          <option value="CG">🇨🇬 Congo (Brazzaville)</option>
-          <option value="CD">🇨🇩 RDC (Kinshasa)</option>
-          <option value="GA">🇬🇦 Gabon</option>
-          <option value="CF">🇨🇫 Centrafrique (RCA)</option>
-          <option value="TD">🇹🇩 Tchad</option>
-          <option value="SN">🇸🇳 Sénégal</option>
-        </select>
-        
-        <div class="hidden md:flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
-          Réseau Connecté (Laborex + Geoapify)
-        </div>
+      <!-- Chargement -->
+      <div class="flex items-center justify-center space-x-2 pt-1">
+        <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0s;"></div>
+        <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0.2s;"></div>
+        <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0.4s;"></div>
+        <span class="text-[11px] text-pink-100 font-medium ml-2">Initialisation et géolocalisation en cours...</span>
       </div>
-    </div>
-  </header>
 
-  <!-- CONTENEUR PRINCIPAL -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-44 flex flex-col space-y-6">
-    <div id="view-container" class="flex-1 space-y-6">
-      <div class="p-12 text-center space-y-4">
-        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-[#6B125C]"></i>
-        <p class="text-sm font-bold text-slate-700">Initialisation du système Allo Ramia...</p>
-      </div>
     </div>
+  </div>
+
+  <!-- CONTENEUR PRINCIPAL DE L'APPLICATION -->
+  <div id="view-container"></div>
   </main>
 
   <!-- NAVIGATION FLOTTANTE EN CAPSULE BASSE -->
-  <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-xl bg-white/95 backdrop-blur-xl border border-white/60 shadow-[0_10px_35px_rgba(107,18,92,0.2)] z-50 rounded-2xl py-2.5 px-3">
-    <div class="flex items-center justify-around text-center">
+  <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-40 p-2 shadow-lg" style="display: none;">
+ 
+	
+	<div class="flex items-center justify-around text-center">
       <button onclick="window.app.navigateTo('home')" id="nav-btn-home" class="flex flex-col items-center py-1 px-2 text-[#6B125C] transition">
         <i class="fa-solid fa-house text-base mb-0.5"></i>
         <span class="text-[10px] font-bold">Accueil</span>
@@ -568,61 +581,137 @@
         this.cleanExpiredCache();
       }
 
-  init() {
-        this.updateCartBadge();
-        this.syncHeaderSelector();
-        this.renderCityDropdown();
-        
-        // Lancement unique de l'animation de progression qui gère elle-même l'init GPS
-        this.animateLoadingProgress();
-      }
-	 animateLoadingProgress() {
+init() {
+      this.updateCartBadge();
+      this.syncHeaderSelector();
+      this.renderCityDropdown();
+      
+      // 1. Lancement silencieux de la géolocalisation et des pharmacies en arrière-plan
+      this.autoDetectUserLocation(() => {
+        this.fetchRealPharmaciesOSM(3500);
+      });
+
+      // 2. Après 5 secondes : suppression définitive du Splash Screen et restauration de l'interface
+      setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+          splash.remove(); // Supprime complètement l'élément pour libérer les clics sur toute la page
+        }
+
+        // Restauration de la barre de navigation du bas en îlot flottant cliquable
+        const bottomNav = document.getElementById('bottom-nav') || document.querySelector('nav.fixed');
+        if (bottomNav) {
+          bottomNav.style.display = 'flex';
+          bottomNav.className = "fixed bottom-4 left-4 right-4 max-w-lg mx-auto bg-white/95 backdrop-blur-md border border-slate-200/80 z-40 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center justify-between";
+        }
+
+        // Injection de la vue d'accueil avec le logo et le slogan d'Allo Ramia
+        const container = document.getElementById('view-container');
+        if (container) {
+          container.innerHTML = `
+            <!-- En-tête / Header avec Logo et Slogan -->
+            <header class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] text-white p-4 shadow-lg mb-4 rounded-b-3xl">
+              <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-12 h-12 rounded-2xl bg-white text-[#6B125C] flex items-center justify-center text-2xl shadow-md">
+                    💊
+                  </div>
+                  <div>
+                    <h1 class="text-xl font-black tracking-tight">Allo Ramia</h1>
+                    <p class="text-[11px] font-medium text-pink-200">VOS MÉDICAMENTS LIVRÉS EN UN CLIN D'ŒIL ⚡</p>
+                  </div>
+                </div>
+              </div>
+            </header>
+          ` + this.renderHomeView();
+          
+          if (typeof this.initOSMMap === 'function') {
+            setTimeout(() => {
+              this.initOSMMap();
+            }, 300);
+          }
+        }
+      }, 5000);
+    }
+
+      animateLoadingProgress() {
         const container = document.getElementById('view-container');
         if (!container) return;
 
+        // Masquer la barre de navigation flottante pendant le Splash Screen
+        const floatingNav = document.querySelector('nav.fixed');
+        if (floatingNav) floatingNav.style.display = 'none';
+
+        // AFFICHAGE DIRECT DU SPLASH SCREEN ANIMÉ PLEIN ÉCRAN (5 SECONDES)
         container.innerHTML = `
-          <div class="max-w-md mx-auto my-20 bg-white p-8 rounded-2xl shadow-xl border border-pink-100 text-center space-y-5">
-            <div class="w-16 h-16 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto text-[#6B125C] text-3xl font-black shadow-inner">
-              <i class="fa-solid fa-pills fa-spin"></i>
-            </div>
-            <div class="space-y-2">
-              <h3 class="text-base font-extrabold text-slate-800">Démarrage d'Allo Ramia V5</h3>
-              <p id="loading-status-text" class="text-xs text-slate-500">Connexion au réseau pharmaceutique...</p>
-            </div>
-            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200">
-              <div id="loading-progress-bar" class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] h-full rounded-full transition-all duration-300" style="width: 10%;"></div>
-            </div>
-            <div class="flex justify-between text-[11px] font-bold text-[#6B125C]">
-              <span>Sécurisé Laborex & Geoapify</span>
-              <span id="loading-percentage">10%</span>
+          <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#6B125C] via-[#851264] to-[#A1197A] text-white p-6 transition-opacity duration-700 opacity-100">
+            <div class="max-w-lg w-full text-center space-y-5 transform transition-all duration-700 scale-100">
+              
+              <!-- Logo / Icône Animée -->
+              <div class="w-24 h-24 rounded-3xl bg-white text-[#6B125C] flex items-center justify-center mx-auto text-5xl shadow-2xl ring-8 ring-white/10 animate-pulse">
+                💊
+              </div>
+
+              <!-- Titre et Slogan -->
+              <div class="space-y-1">
+                <h1 class="text-3xl font-black tracking-tight">Allo Ramia</h1>
+                <p class="text-xs font-bold uppercase tracking-widest text-pink-200">Plateforme Pharmaceutique Internationale 24/7</p>
+              </div>
+
+              <!-- Encadré Message Centré, Agrandi & Enrichi -->
+              <div class="bg-white text-slate-800 p-5 rounded-3xl shadow-2xl space-y-2 text-center border border-pink-100 flex flex-col items-center justify-center">
+                <div class="flex items-center justify-center space-x-2 font-black text-sm text-[#6B125C] w-full text-center">
+                  <span>🌍</span><br><br>
+                  <span>Commandez au Cameroun & depuis l'étranger</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium text-center">
+                  Paiement sécurisé à distance via <strong class="text-[#6B125C]">MTN Mobile Money</strong> & <strong class="text-[#6B125C]">Orange Money</strong> & livraison ultra-rapide <strong class="text-slate-900">à domicile, à l'hôpital ou au bureau</strong> via <span class="text-[#6B125C] font-bold">Yango Moto</span>, <span class="text-[#6B125C] font-bold">Yango Taxi</span> ou <span class="text-[#6B125C] font-bold">Gozem</span>.
+                </p>
+              </div>
+
+              <!-- BADGES VISUELS DES PARTENAIRES CLÉS -->
+              <div class="pt-1">
+                <p class="text-[10px] uppercase tracking-widest font-bold text-pink-200 mb-2">Partenaires & Réseau Officiel</p>
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                  <span class="px-3 py-1 bg-yellow-400 text-slate-900 text-[11px] font-black rounded-full shadow-md">🟡 MTN MoMo</span>
+                  <span class="px-3 py-1 bg-orange-500 text-white text-[11px] font-black rounded-full shadow-md">🟠 Orange Money</span>
+                  <span class="px-3 py-1 bg-red-500 text-white text-[11px] font-black rounded-full shadow-md">🚗 Yango</span>
+                  <span class="px-3 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-full shadow-md">💊 Laborex</span>
+                </div>
+              </div>
+
+              <!-- Indicateur de chargement discret -->
+              <div class="flex items-center justify-center space-x-2 pt-1">
+                <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0s;"></div>
+                <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-2 rounded-full bg-amber-300 animate-bounce" style="animation-delay: 0.4s;"></div>
+                <span class="text-[11px] text-pink-100 font-medium ml-2">Initialisation et géolocalisation en cours...</span>
+              </div>
+
             </div>
           </div>
         `;
 
-        let progress = 10;
-        const statusText = document.getElementById('loading-status-text');
-        const progressBar = document.getElementById('loading-progress-bar');
-        const percentageText = document.getElementById('loading-percentage');
+        // Lancement de l'initialisation et du GPS en arrière-plan pendant que le splash screen tourne
+        this.autoDetectUserLocation(() => {
+          this.fetchRealPharmaciesOSM(3500);
+        });
 
-        const interval = setInterval(() => {
-          progress += 15;
-          if (progress > 100) progress = 100;
-
-          if (progressBar) progressBar.style.width = `${progress}%`;
-          if (percentageText) percentageText.textContent = `${progress}%`;
-
-          if (progress === 100) {
-            clearInterval(interval);
+        // Redirection automatique vers l'interface principale après exactement 5 secondes (5000ms)
+        setTimeout(() => {
+          const splash = document.getElementById('splash-screen');
+          if (splash) {
+            splash.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
+              splash.remove();
+              if (floatingNav) floatingNav.style.display = 'block';
               this.navigateTo('home');
-              
-              // 🚀 1. DÉCLENCHEMENT SILENCIEUX À L'OUVERTURE
-              this.autoDetectUserLocation(() => {
-                this.fetchRealPharmaciesOSM(3500);
-              });
-            }, 250);
+            }, 700);
+          } else {
+            if (floatingNav) floatingNav.style.display = 'block';
+            this.navigateTo('home');
           }
-        }, 80);
+        }, 5000);
       }
 
       showToast(msg) {
@@ -880,7 +969,9 @@ searchMedicineFromHome() {
         // 2. Mise à jour automatique des cartes d'officines géolocalisées avec le détail transparent du prix
         this.updateMapAndCards();
       }
-      // 1. VUE ACCUEIL (GEOLOCALISATION & RECHERCHE REAL-TIME GEOAPIFY)
+     
+    
+ // 1. VUE ACCUEIL (AVEC SPLASH SCREEN ANIMÉ PLEIN ÉCRAN EN PREMIER PLAN)
       renderHomeView() {
         return `
           <div class="space-y-6">
@@ -900,7 +991,7 @@ searchMedicineFromHome() {
             <div class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] rounded-2xl p-5 sm:p-7 text-white shadow-xl space-y-4">
               <div class="flex items-center justify-between">
                 <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">📍 Point de livraison & Pharmacie à proximité</span>
-                <span id="header-city-badge" class="text-xs font-mono bg-pink-900/50 px-2.5 py-1 rounded-lg text-pink-200 font-bold">${this.currentCity}</span>
+                <span id="header-city-badge" class="text-xs font-mono bg-pink-900/50 px-2.5 py-1 rounded-lg text-pink-200 font-bold">${this.currentCity || 'Position non définie'}</span>
               </div>
 
               <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Trouvez vos médicaments disponibles 24/7.</h2>
@@ -935,7 +1026,6 @@ searchMedicineFromHome() {
                     <span class="text-pink-100 font-semibold shrink-0">Quartier :</span>
                     <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Akwa, Bastos..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
                   </div>
-              
                 </div>
               </div>
             </div>
@@ -1988,11 +2078,11 @@ async performSearch() {
       }
     }
 
-    // INITIALISATION APPLICATIVE GLOBALE
-    window.app = new AlloRamiaApp();
-    window.onload = () => { 
-      window.app.init(); 
-    };
+// INITIALISATION APPLICATIVE GLOBALE (PROPRE ET UNIQUE)
+    document.addEventListener("DOMContentLoaded", () => {
+      window.app = new AlloRamiaApp();
+      window.app.init();
+    });
   </script>
   <!-- FIN DE L'ARCHITECTURE APPLICATIVE INTEGRALE ALLO RAMIA -->
 </body>
