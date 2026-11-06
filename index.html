@@ -103,8 +103,8 @@
       <div class="flex items-center space-x-3 cursor-pointer" onclick="window.app.navigateTo('home')">
         <div class="w-10 h-10 rounded-xl bg-white text-[#6B125C] flex items-center justify-center font-black text-xl shadow">💊</div>
         <div>
-          <h1 id="header-title" class="text-xl font-bold tracking-tight">Allo Ramia - Accueil</h1>
-          <p class="text-[10px] text-pink-200 uppercase tracking-widest font-medium">Plateforme Pharmaceutique Internationale & Garde 24/7</p>
+          <h1 id="header-title" class="text-xl font-bold tracking-tight">Allo Ramia </h1>
+          <p class="text-[10px] text-pink-200 uppercase tracking-widest font-medium">Vos médicaments livrés en un clin d'œil ⚡</p>
         </div>
       </div>
 
@@ -199,14 +199,14 @@
       constructor() {
 	    this.isOrdoLoading = false;
         this.currentView = 'home';
-        this.currentCountry = 'CM';
-        this.currentCity = 'Douala';
-        this.currentDistrict = 'Akwa / Rue Kotto'; 
+        this.currentCountry = '';
+        this.currentCity = '';
+        this.currentDistrict = ''; 
         this.selectedTransport = 'all';
         this.map = null;
         this.mapMarkers = [];
         this.userMarker = null;
-        this.currentLocation = { lat: 4.0511, lng: 9.7679 };
+        this.currentLocation = null;
         this.realPharmacies = [];
         this.searchRadius = 3500; 
         this.searchedMedicine = "";
@@ -363,119 +363,266 @@
           }
         };
 
-                // CATALOGUE DE REFERENCE LABOREX (100 MEDICAMENTS ESSENTIELS EN DUR)
+                // CATALOGUE DE REFERENCE LABOREX (200 MEDICAMENTS ESSENTIELS EN DUR)
         this.laborexCatalog = [
-          { code: "LAB-001", name: "Spécialité Médicale Réf. 1 - Antibiotique", form: "Gélule", cat: "Antibiotique", ht: 735, ttc: 956, stock: "Disponible", reqRx: "Non", disp: "86%" },
-          { code: "LAB-002", name: "Spécialité Médicale Réf. 2 - Anti-inflammatoire", form: "Sirop", cat: "Anti-inflammatoire", ht: 820, ttc: 1066, stock: "Disponible", reqRx: "Non", disp: "87%" },
-          { code: "LAB-003", name: "Spécialité Médicale Réf. 3 - Antipaludéen", form: "Pommade", cat: "Antipaludéen", ht: 905, ttc: 1176, stock: "Disponible", reqRx: "Oui", disp: "88%" },
-          { code: "LAB-004", name: "Spécialité Médicale Réf. 4 - Gastro-entérologie", form: "Injectable", cat: "Gastro-entérologie", ht: 990, ttc: 1287, stock: "Disponible", reqRx: "Non", disp: "89%" },
-          { code: "LAB-005", name: "Spécialité Médicale Réf. 5 - Cardiovasculaire", form: "Collyre", cat: "Cardiovasculaire", ht: 1075, ttc: 1398, stock: "Disponible", reqRx: "Non", disp: "90%" },
-          { code: "LAB-006", name: "Spécialité Médicale Réf. 6 - Vitamines & Compléments", form: "Sachet", cat: "Vitamines & Compléments", ht: 1160, ttc: 1508, stock: "Disponible", reqRx: "Oui", disp: "91%" },
-          { code: "LAB-007", name: "Spécialité Médicale Réf. 7 - Ophtalmologie", form: "Comprimé", cat: "Ophtalmologie", ht: 1245, ttc: 1618, stock: "Disponible", reqRx: "Non", disp: "92%" },
-          { code: "LAB-008", name: "Spécialité Médicale Réf. 8 - Dermatologie", form: "Gélule", cat: "Dermatologie", ht: 1330, ttc: 1729, stock: "Disponible", reqRx: "Non", disp: "93%" },
-          { code: "LAB-009", name: "Spécialité Médicale Réf. 9 - Pédiatrie", form: "Sirop", cat: "Pédiatrie", ht: 1415, ttc: 1840, stock: "Disponible", reqRx: "Oui", disp: "94%" },
-          { code: "LAB-010", name: "Spécialité Médicale Réf. 10 - Antalgique / Antipyrétique", form: "Pommade", cat: "Antalgique / Antipyrétique", ht: 1500, ttc: 1950, stock: "Disponible", reqRx: "Non", disp: "95%" },
-          { code: "LAB-011", name: "Spécialité Médicale Réf. 11 - Antibiotique", form: "Injectable", cat: "Antibiotique", ht: 1585, ttc: 2060, stock: "Disponible", reqRx: "Non", disp: "96%" },
-          { code: "LAB-012", name: "Spécialité Médicale Réf. 12 - Anti-inflammatoire", form: "Collyre", cat: "Anti-inflammatoire", ht: 1670, ttc: 2171, stock: "Disponible", reqRx: "Oui", disp: "97%" },
-          { code: "LAB-013", name: "Spécialité Médicale Réf. 13 - Antipaludéen", form: "Sachet", cat: "Antipaludéen", ht: 1755, ttc: 2282, stock: "Disponible", reqRx: "Non", disp: "98%" },
-          { code: "LAB-014", name: "Spécialité Médicale Réf. 14 - Gastro-entérologie", form: "Comprimé", cat: "Gastro-entérologie", ht: 1840, ttc: 2392, stock: "Disponible", reqRx: "Non", disp: "85%" },
-          { code: "LAB-015", name: "Spécialité Médicale Réf. 15 - Cardiovasculaire", form: "Gélule", cat: "Cardiovasculaire", ht: 1925, ttc: 2502, stock: "Disponible", reqRx: "Oui", disp: "86%" },
-          { code: "LAB-016", name: "Spécialité Médicale Réf. 16 - Vitamines & Compléments", form: "Sirop", cat: "Vitamines & Compléments", ht: 2010, ttc: 2613, stock: "Disponible", reqRx: "Non", disp: "87%" },
-          { code: "LAB-017", name: "Spécialité Médicale Réf. 17 - Ophtalmologie", form: "Pommade", cat: "Ophtalmologie", ht: 2095, ttc: 2724, stock: "Disponible", reqRx: "Non", disp: "88%" },
-          { code: "LAB-018", name: "Spécialité Médicale Réf. 18 - Dermatologie", form: "Injectable", cat: "Dermatologie", ht: 2180, ttc: 2834, stock: "Disponible", reqRx: "Oui", disp: "89%" },
-          { code: "LAB-019", name: "Spécialité Médicale Réf. 19 - Pédiatrie", form: "Collyre", cat: "Pédiatrie", ht: 2265, ttc: 2944, stock: "Disponible", reqRx: "Non", disp: "90%" },
-          { code: "LAB-020", name: "Spécialité Médicale Réf. 20 - Antalgique / Antipyrétique", form: "Sachet", cat: "Antalgique / Antipyrétique", ht: 2350, ttc: 3055, stock: "Disponible", reqRx: "Non", disp: "91%" },
-          { code: "LAB-021", name: "Spécialité Médicale Réf. 21 - Antibiotique", form: "Comprimé", cat: "Antibiotique", ht: 2435, ttc: 3166, stock: "Disponible", reqRx: "Oui", disp: "92%" },
-          { code: "LAB-022", name: "Spécialité Médicale Réf. 22 - Anti-inflammatoire", form: "Gélule", cat: "Anti-inflammatoire", ht: 2520, ttc: 3276, stock: "Disponible", reqRx: "Non", disp: "93%" },
-          { code: "LAB-023", name: "Spécialité Médicale Réf. 23 - Antipaludéen", form: "Sirop", cat: "Antipaludéen", ht: 2605, ttc: 3386, stock: "Disponible", reqRx: "Non", disp: "94%" },
-          { code: "LAB-024", name: "Spécialité Médicale Réf. 24 - Gastro-entérologie", form: "Pommade", cat: "Gastro-entérologie", ht: 2690, ttc: 3497, stock: "Disponible", reqRx: "Oui", disp: "95%" },
-          { code: "LAB-025", name: "Spécialité Médicale Réf. 25 - Cardiovasculaire", form: "Injectable", cat: "Cardiovasculaire", ht: 2775, ttc: 3608, stock: "Disponible", reqRx: "Non", disp: "96%" },
-          { code: "LAB-026", name: "Spécialité Médicale Réf. 26 - Vitamines & Compléments", form: "Collyre", cat: "Vitamines & Compléments", ht: 2860, ttc: 3718, stock: "Disponible", reqRx: "Non", disp: "97%" },
-          { code: "LAB-027", name: "Spécialité Médicale Réf. 27 - Ophtalmologie", form: "Sachet", cat: "Ophtalmologie", ht: 2945, ttc: 3828, stock: "Disponible", reqRx: "Oui", disp: "98%" },
-          { code: "LAB-028", name: "Spécialité Médicale Réf. 28 - Dermatologie", form: "Comprimé", cat: "Dermatologie", ht: 3030, ttc: 3939, stock: "Disponible", reqRx: "Non", disp: "85%" },
-          { code: "LAB-029", name: "Spécialité Médicale Réf. 29 - Pédiatrie", form: "Gélule", cat: "Pédiatrie", ht: 3115, ttc: 4050, stock: "Disponible", reqRx: "Non", disp: "86%" },
-          { code: "LAB-030", name: "Spécialité Médicale Réf. 30 - Antalgique / Antipyrétique", form: "Sirop", cat: "Antalgique / Antipyrétique", ht: 3200, ttc: 4160, stock: "Disponible", reqRx: "Oui", disp: "87%" },
-          { code: "LAB-031", name: "Spécialité Médicale Réf. 31 - Antibiotique", form: "Pommade", cat: "Antibiotique", ht: 3285, ttc: 4270, stock: "Disponible", reqRx: "Non", disp: "88%" },
-          { code: "LAB-032", name: "Spécialité Médicale Réf. 32 - Anti-inflammatoire", form: "Injectable", cat: "Anti-inflammatoire", ht: 3370, ttc: 4381, stock: "Disponible", reqRx: "Non", disp: "89%" },
-          { code: "LAB-033", name: "Spécialité Médicale Réf. 33 - Antipaludéen", form: "Collyre", cat: "Antipaludéen", ht: 3455, ttc: 4492, stock: "Disponible", reqRx: "Oui", disp: "90%" },
-          { code: "LAB-034", name: "Spécialité Médicale Réf. 34 - Gastro-entérologie", form: "Sachet", cat: "Gastro-entérologie", ht: 3540, ttc: 4602, stock: "Disponible", reqRx: "Non", disp: "91%" },
-          { code: "LAB-035", name: "Spécialité Médicale Réf. 35 - Cardiovasculaire", form: "Comprimé", cat: "Cardiovasculaire", ht: 3625, ttc: 4712, stock: "Disponible", reqRx: "Non", disp: "92%" },
-          { code: "LAB-036", name: "Spécialité Médicale Réf. 36 - Vitamines & Compléments", form: "Gélule", cat: "Vitamines & Compléments", ht: 3710, ttc: 4823, stock: "Disponible", reqRx: "Oui", disp: "93%" },
-          { code: "LAB-037", name: "Spécialité Médicale Réf. 37 - Ophtalmologie", form: "Sirop", cat: "Ophtalmologie", ht: 3795, ttc: 4934, stock: "Disponible", reqRx: "Non", disp: "94%" },
-          { code: "LAB-038", name: "Spécialité Médicale Réf. 38 - Dermatologie", form: "Pommade", cat: "Dermatologie", ht: 3880, ttc: 5044, stock: "Disponible", reqRx: "Non", disp: "95%" },
-          { code: "LAB-039", name: "Spécialité Médicale Réf. 39 - Pédiatrie", form: "Injectable", cat: "Pédiatrie", ht: 3965, ttc: 5154, stock: "Disponible", reqRx: "Oui", disp: "96%" },
-          { code: "LAB-040", name: "Spécialité Médicale Réf. 40 - Antalgique / Antipyrétique", form: "Collyre", cat: "Antalgique / Antipyrétique", ht: 4050, ttc: 5265, stock: "Disponible", reqRx: "Non", disp: "97%" },
-          { code: "LAB-041", name: "Spécialité Médicale Réf. 41 - Antibiotique", form: "Sachet", cat: "Antibiotique", ht: 4135, ttc: 5376, stock: "Disponible", reqRx: "Non", disp: "98%" },
-          { code: "LAB-042", name: "Spécialité Médicale Réf. 42 - Anti-inflammatoire", form: "Comprimé", cat: "Anti-inflammatoire", ht: 4220, ttc: 5486, stock: "Disponible", reqRx: "Oui", disp: "85%" },
-          { code: "LAB-043", name: "Spécialité Médicale Réf. 43 - Antipaludéen", form: "Gélule", cat: "Antipaludéen", ht: 4305, ttc: 5596, stock: "Disponible", reqRx: "Non", disp: "86%" },
-          { code: "LAB-044", name: "Spécialité Médicale Réf. 44 - Gastro-entérologie", form: "Sirop", cat: "Gastro-entérologie", ht: 4390, ttc: 5707, stock: "Disponible", reqRx: "Non", disp: "87%" },
-          { code: "LAB-045", name: "Spécialité Médicale Réf. 45 - Cardiovasculaire", form: "Pommade", cat: "Cardiovasculaire", ht: 4475, ttc: 5818, stock: "Disponible", reqRx: "Oui", disp: "88%" },
-          { code: "LAB-046", name: "Spécialité Médicale Réf. 46 - Vitamines & Compléments", form: "Injectable", cat: "Vitamines & Compléments", ht: 4560, ttc: 5928, stock: "Disponible", reqRx: "Non", disp: "89%" },
-          { code: "LAB-047", name: "Spécialité Médicale Réf. 47 - Ophtalmologie", form: "Collyre", cat: "Ophtalmologie", ht: 4645, ttc: 6038, stock: "Disponible", reqRx: "Non", disp: "90%" },
-          { code: "LAB-048", name: "Spécialité Médicale Réf. 48 - Dermatologie", form: "Sachet", cat: "Dermatologie", ht: 4730, ttc: 6149, stock: "Disponible", reqRx: "Oui", disp: "91%" },
-          { code: "LAB-049", name: "Spécialité Médicale Réf. 49 - Pédiatrie", form: "Comprimé", cat: "Pédiatrie", ht: 4815, ttc: 6260, stock: "Disponible", reqRx: "Non", disp: "92%" },
-          { code: "LAB-050", name: "Spécialité Médicale Réf. 50 - Antalgique / Antipyrétique", form: "Gélule", cat: "Antalgique / Antipyrétique", ht: 4900, ttc: 6370, stock: "Disponible", reqRx: "Non", disp: "93%" },
-          { code: "LAB-051", name: "Spécialité Médicale Réf. 51 - Antibiotique", form: "Sirop", cat: "Antibiotique", ht: 4985, ttc: 6480, stock: "Disponible", reqRx: "Oui", disp: "94%" },
-          { code: "LAB-052", name: "Spécialité Médicale Réf. 52 - Anti-inflammatoire", form: "Pommade", cat: "Anti-inflammatoire", ht: 5070, ttc: 6591, stock: "Disponible", reqRx: "Non", disp: "95%" },
-          { code: "LAB-053", name: "Spécialité Médicale Réf. 53 - Antipaludéen", form: "Injectable", cat: "Antipaludéen", ht: 5155, ttc: 6702, stock: "Disponible", reqRx: "Non", disp: "96%" },
-          { code: "LAB-054", name: "Spécialité Médicale Réf. 54 - Gastro-entérologie", form: "Collyre", cat: "Gastro-entérologie", ht: 5240, ttc: 6812, stock: "Disponible", reqRx: "Oui", disp: "97%" },
-          { code: "LAB-055", name: "Spécialité Médicale Réf. 55 - Cardiovasculaire", form: "Sachet", cat: "Cardiovasculaire", ht: 5325, ttc: 6922, stock: "Disponible", reqRx: "Non", disp: "98%" },
-          { code: "LAB-056", name: "Spécialité Médicale Réf. 56 - Vitamines & Compléments", form: "Comprimé", cat: "Vitamines & Compléments", ht: 5410, ttc: 7033, stock: "Disponible", reqRx: "Non", disp: "85%" },
-          { code: "LAB-057", name: "Spécialité Médicale Réf. 57 - Ophtalmologie", form: "Gélule", cat: "Ophtalmologie", ht: 5495, ttc: 7144, stock: "Disponible", reqRx: "Oui", disp: "86%" },
-          { code: "LAB-058", name: "Spécialité Médicale Réf. 58 - Dermatologie", form: "Sirop", cat: "Dermatologie", ht: 5580, ttc: 7254, stock: "Disponible", reqRx: "Non", disp: "87%" },
-          { code: "LAB-059", name: "Spécialité Médicale Réf. 59 - Pédiatrie", form: "Pommade", cat: "Pédiatrie", ht: 5665, ttc: 7364, stock: "Disponible", reqRx: "Non", disp: "88%" },
-          { code: "LAB-060", name: "Spécialité Médicale Réf. 60 - Antalgique / Antipyrétique", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 5750, ttc: 7475, stock: "Disponible", reqRx: "Oui", disp: "89%" },
-          { code: "LAB-061", name: "Spécialité Médicale Réf. 61 - Antibiotique", form: "Collyre", cat: "Antibiotique", ht: 5835, ttc: 7586, stock: "Disponible", reqRx: "Non", disp: "90%" },
-          { code: "LAB-062", name: "Spécialité Médicale Réf. 62 - Anti-inflammatoire", form: "Sachet", cat: "Anti-inflammatoire", ht: 5920, ttc: 7696, stock: "Disponible", reqRx: "Non", disp: "91%" },
-          { code: "LAB-063", name: "Spécialité Médicale Réf. 63 - Antipaludéen", form: "Comprimé", cat: "Antipaludéen", ht: 6005, ttc: 7806, stock: "Disponible", reqRx: "Oui", disp: "92%" },
-          { code: "LAB-064", name: "Spécialité Médicale Réf. 64 - Gastro-entérologie", form: "Gélule", cat: "Gastro-entérologie", ht: 6090, ttc: 7917, stock: "Disponible", reqRx: "Non", disp: "93%" },
-          { code: "LAB-065", name: "Spécialité Médicale Réf. 65 - Cardiovasculaire", form: "Sirop", cat: "Cardiovasculaire", ht: 6175, ttc: 8028, stock: "Disponible", reqRx: "Non", disp: "94%" },
-          { code: "LAB-066", name: "Spécialité Médicale Réf. 66 - Vitamines & Compléments", form: "Pommade", cat: "Vitamines & Compléments", ht: 6260, ttc: 8138, stock: "Disponible", reqRx: "Oui", disp: "95%" },
-          { code: "LAB-067", name: "Spécialité Médicale Réf. 67 - Ophtalmologie", form: "Injectable", cat: "Ophtalmologie", ht: 6345, ttc: 8248, stock: "Disponible", reqRx: "Non", disp: "96%" },
-          { code: "LAB-068", name: "Spécialité Médicale Réf. 68 - Dermatologie", form: "Collyre", cat: "Dermatologie", ht: 6430, ttc: 8359, stock: "Disponible", reqRx: "Non", disp: "97%" },
-          { code: "LAB-069", name: "Spécialité Médicale Réf. 69 - Pédiatrie", form: "Sachet", cat: "Pédiatrie", ht: 6515, ttc: 8470, stock: "Disponible", reqRx: "Oui", disp: "98%" },
-          { code: "LAB-070", name: "Spécialité Médicale Réf. 70 - Antalgique / Antipyrétique", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 6600, ttc: 8580, stock: "Disponible", reqRx: "Non", disp: "85%" },
-          { code: "LAB-071", name: "Spécialité Médicale Réf. 71 - Antibiotique", form: "Gélule", cat: "Antibiotique", ht: 6685, ttc: 8690, stock: "Disponible", reqRx: "Non", disp: "86%" },
-          { code: "LAB-072", name: "Spécialité Médicale Réf. 72 - Anti-inflammatoire", form: "Sirop", cat: "Anti-inflammatoire", ht: 6770, ttc: 8801, stock: "Disponible", reqRx: "Oui", disp: "87%" },
-          { code: "LAB-073", name: "Spécialité Médicale Réf. 73 - Antipaludéen", form: "Pommade", cat: "Antipaludéen", ht: 6855, ttc: 8912, stock: "Disponible", reqRx: "Non", disp: "88%" },
-          { code: "LAB-074", name: "Spécialité Médicale Réf. 74 - Gastro-entérologie", form: "Injectable", cat: "Gastro-entérologie", ht: 6940, ttc: 9022, stock: "Disponible", reqRx: "Non", disp: "89%" },
-          { code: "LAB-075", name: "Spécialité Médicale Réf. 75 - Cardiovasculaire", form: "Collyre", cat: "Cardiovasculaire", ht: 7025, ttc: 9132, stock: "Disponible", reqRx: "Oui", disp: "90%" },
-          { code: "LAB-076", name: "Spécialité Médicale Réf. 76 - Vitamines & Compléments", form: "Sachet", cat: "Vitamines & Compléments", ht: 7110, ttc: 9243, stock: "Disponible", reqRx: "Non", disp: "91%" },
-          { code: "LAB-077", name: "Spécialité Médicale Réf. 77 - Ophtalmologie", form: "Comprimé", cat: "Ophtalmologie", ht: 7195, ttc: 9354, stock: "Disponible", reqRx: "Non", disp: "92%" },
-          { code: "LAB-078", name: "Spécialité Médicale Réf. 78 - Dermatologie", form: "Gélule", cat: "Dermatologie", ht: 7280, ttc: 9464, stock: "Disponible", reqRx: "Oui", disp: "93%" },
-          { code: "LAB-079", name: "Spécialité Médicale Réf. 79 - Pédiatrie", form: "Sirop", cat: "Pédiatrie", ht: 7365, ttc: 9574, stock: "Disponible", reqRx: "Non", disp: "94%" },
-          { code: "LAB-080", name: "Spécialité Médicale Réf. 80 - Antalgique / Antipyrétique", form: "Pommade", cat: "Antalgique / Antipyrétique", ht: 7450, ttc: 9685, stock: "Disponible", reqRx: "Non", disp: "95%" },
-          { code: "LAB-081", name: "Spécialité Médicale Réf. 81 - Antibiotique", form: "Injectable", cat: "Antibiotique", ht: 7535, ttc: 9796, stock: "Disponible", reqRx: "Oui", disp: "96%" },
-          { code: "LAB-082", name: "Spécialité Médicale Réf. 82 - Anti-inflammatoire", form: "Collyre", cat: "Anti-inflammatoire", ht: 7620, ttc: 9906, stock: "Disponible", reqRx: "Non", disp: "97%" },
-          { code: "LAB-083", name: "Spécialité Médicale Réf. 83 - Antipaludéen", form: "Sachet", cat: "Antipaludéen", ht: 7705, ttc: 10016, stock: "Disponible", reqRx: "Non", disp: "98%" },
-          { code: "LAB-084", name: "Spécialité Médicale Réf. 84 - Gastro-entérologie", form: "Comprimé", cat: "Gastro-entérologie", ht: 7790, ttc: 10127, stock: "Disponible", reqRx: "Oui", disp: "85%" },
-          { code: "LAB-085", name: "Spécialité Médicale Réf. 85 - Cardiovasculaire", form: "Gélule", cat: "Cardiovasculaire", ht: 7875, ttc: 10238, stock: "Disponible", reqRx: "Non", disp: "86%" },
-          { code: "LAB-086", name: "Spécialité Médicale Réf. 86 - Vitamines & Compléments", form: "Sirop", cat: "Vitamines & Compléments", ht: 7960, ttc: 10348, stock: "Disponible", reqRx: "Non", disp: "87%" },
-          { code: "LAB-087", name: "Spécialité Médicale Réf. 87 - Ophtalmologie", form: "Pommade", cat: "Ophtalmologie", ht: 8045, ttc: 10458, stock: "Disponible", reqRx: "Oui", disp: "88%" },
-          { code: "LAB-088", name: "Spécialité Médicale Réf. 88 - Dermatologie", form: "Injectable", cat: "Dermatologie", ht: 8130, ttc: 10569, stock: "Disponible", reqRx: "Non", disp: "89%" },
-          { code: "LAB-089", name: "Spécialité Médicale Réf. 89 - Pédiatrie", form: "Collyre", cat: "Pédiatrie", ht: 8215, ttc: 10680, stock: "Disponible", reqRx: "Non", disp: "90%" },
-          { code: "LAB-090", name: "Spécialité Médicale Réf. 90 - Antalgique / Antipyrétique", form: "Sachet", cat: "Antalgique / Antipyrétique", ht: 8300, ttc: 10790, stock: "Disponible", reqRx: "Oui", disp: "91%" },
-          { code: "LAB-091", name: "Spécialité Médicale Réf. 91 - Antibiotique", form: "Comprimé", cat: "Antibiotique", ht: 8385, ttc: 10900, stock: "Disponible", reqRx: "Non", disp: "92%" },
-          { code: "LAB-092", name: "Spécialité Médicale Réf. 92 - Anti-inflammatoire", form: "Gélule", cat: "Anti-inflammatoire", ht: 8470, ttc: 11011, stock: "Disponible", reqRx: "Non", disp: "93%" },
-          { code: "LAB-093", name: "Spécialité Médicale Réf. 93 - Antipaludéen", form: "Sirop", cat: "Antipaludéen", ht: 8555, ttc: 11122, stock: "Disponible", reqRx: "Oui", disp: "94%" },
-          { code: "LAB-094", name: "Spécialité Médicale Réf. 94 - Gastro-entérologie", form: "Pommade", cat: "Gastro-entérologie", ht: 8640, ttc: 11232, stock: "Disponible", reqRx: "Non", disp: "95%" },
-          { code: "LAB-095", name: "Spécialité Médicale Réf. 95 - Cardiovasculaire", form: "Injectable", cat: "Cardiovasculaire", ht: 8725, ttc: 11342, stock: "Disponible", reqRx: "Non", disp: "96%" },
-          { code: "LAB-096", name: "Spécialité Médicale Réf. 96 - Vitamines & Compléments", form: "Collyre", cat: "Vitamines & Compléments", ht: 8810, ttc: 11453, stock: "Disponible", reqRx: "Oui", disp: "97%" },
-          { code: "LAB-097", name: "Spécialité Médicale Réf. 97 - Ophtalmologie", form: "Sachet", cat: "Ophtalmologie", ht: 8895, ttc: 11564, stock: "Disponible", reqRx: "Non", disp: "98%" },
-          { code: "LAB-098", name: "Spécialité Médicale Réf. 98 - Dermatologie", form: "Comprimé", cat: "Dermatologie", ht: 8980, ttc: 11674, stock: "Disponible", reqRx: "Non", disp: "85%" },
-          { code: "LAB-099", name: "Spécialité Médicale Réf. 99 - Pédiatrie", form: "Gélule", cat: "Pédiatrie", ht: 9065, ttc: 11784, stock: "Disponible", reqRx: "Oui", disp: "86%" },
-          { code: "LAB-100", name: "Spécialité Médicale Réf. 100 - Antalgique / Antipyrétique", form: "Sirop", cat: "Antalgique / Antipyrétique", ht: 9150, ttc: 11895, stock: "Disponible", reqRx: "Non", disp: "87%" }
-        ];
 
+          { code: "LAB-001", name: "Amoxicilline 500mg Gélule", form: "Gélule", cat: "Antibiotique", ht: 735, ttc: 956, stock: "Disponible", reqRx: "Non", disp: "86%" },
+          { code: "LAB-002", name: "Ibuprofène 400mg Sirop", form: "Sirop", cat: "Anti-inflammatoire", ht: 820, ttc: 1066, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-003", name: "Arteméther-Luméfantrine Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 905, ttc: 1176, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-004", name: "Oméprazole 20mg Gélule", form: "Gélule", cat: "Gastro-entérologie", ht: 990, ttc: 1287, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-005", name: "Amlodipine 10mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 1075, ttc: 1398, stock: "Disponible", reqRx: "Non", disp: "90%" },
+          { code: "LAB-006", name: "Vitamine C 500mg Sachet", form: "Sachet", cat: "Vitamines & Compléments", ht: 1160, ttc: 1508, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-007", name: "Collyre Fluorescéine Ophtalmique", form: "Collyre", cat: "Ophtalmologie", ht: 1245, ttc: 1618, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-008", name: "Kétoconazole 2% Pommade", form: "Pommade", cat: "Dermatologie", ht: 1330, ttc: 1729, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          { code: "LAB-009", name: "Paracétamol Pédagogique Sirop", form: "Sirop", cat: "Pédiatrie", ht: 1415, ttc: 1840, stock: "Disponible", reqRx: "Non", disp: "94%" },
+          { code: "LAB-010", name: "Aspirine 500mg Comprimé", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 1500, ttc: 1950, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-011", name: "Ceftriaxone 1g Injectable", form: "Injectable", cat: "Antibiotique", ht: 1585, ttc: 2060, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-012", name: "Diclofénac 50mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 1670, ttc: 2171, stock: "Disponible", reqRx: "Oui", disp: "97%" },
+          { code: "LAB-013", name: "Quinine 300mg Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 1755, ttc: 2282, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-014", name: "Sels de Réhydration Orale (SRO)", form: "Sachet", cat: "Gastro-entérologie", ht: 1840, ttc: 2392, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-015", name: "Bisoprolol 5mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 1925, ttc: 2502, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-016", name: "Complexe B Vitamines Sirop", form: "Sirop", cat: "Vitamines & Compléments", ht: 2010, ttc: 2613, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-017", name: "Sérum Physiologique Monodose", form: "Collyre", cat: "Ophtalmologie", ht: 2095, ttc: 2724, stock: "Disponible", reqRx: "Non", disp: "88%" },
+          { code: "LAB-018", name: "Bétaméthasone Crème Derm.", form: "Pommade", cat: "Dermatologie", ht: 2180, ttc: 2834, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-019", name: "Ibuprofène Nourrisson Suspension", form: "Sirop", cat: "Pédiatrie", ht: 2265, ttc: 2944, stock: "Disponible", reqRx: "Non", disp: "90%" },
+          { code: "LAB-020", name: "Doliprane 1000mg Comprimé", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 2350, ttc: 3055, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-021", name: "Azithromycine 250mg Gélule", form: "Gélule", cat: "Antibiotique", ht: 2435, ttc: 3166, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-022", name: "Méloxicam 15mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 2520, ttc: 3276, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-023", name: "Artésunate 60mg Injectable", form: "Injectable", cat: "Antipaludéen", ht: 2605, ttc: 3386, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-024", name: "Smecta Sachet Vanille", form: "Sachet", cat: "Gastro-entérologie", ht: 2690, ttc: 3497, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-025", name: "Furosémide 40mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 2775, ttc: 3608, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-026", name: "Multivitamines Gélules Fort", form: "Gélule", cat: "Vitamines & Compléments", ht: 2860, ttc: 3718, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-027", name: "Timolol 0.5% Collyre", form: "Collyre", cat: "Ophtalmologie", ht: 2945, ttc: 3828, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-028", name: "Hydrocortisone 1% Crème", form: "Pommade", cat: "Dermatologie", ht: 3030, ttc: 3939, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-029", name: "Amoxicilline Acide Clavulanique Sirop", form: "Sirop", cat: "Pédiatrie", ht: 3115, ttc: 4050, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-030", name: "Efferalgan Codéine Comprimé", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 3200, ttc: 4160, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-031", name: "Ciprofloxacine 500mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 3285, ttc: 4270, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-032", name: "Kétoprofène 100mg Injectable", form: "Injectable", cat: "Anti-inflammatoire", ht: 3370, ttc: 4381, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-033", name: "Halofantrine 250mg Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 3455, ttc: 4492, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-034", name: "Mopral 20mg Gélule", form: "Gélule", cat: "Gastro-entérologie", ht: 3540, ttc: 4602, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-035", name: "Losartan 50mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 3625, ttc: 4712, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-036", name: "Spiruline Comprimés Énergie", form: "Comprimé", cat: "Vitamines & Compléments", ht: 3710, ttc: 4823, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          { code: "LAB-037", name: "Atropine 1% Collyre", form: "Collyre", cat: "Ophtalmologie", ht: 3795, ttc: 4934, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-038", name: "Eosine aqueuse 2% Flacon", form: "Pommade", cat: "Dermatologie", ht: 3880, ttc: 5044, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-039", name: "Fer + Acide Folique Sirop", form: "Sirop", cat: "Pédiatrie", ht: 3965, ttc: 5154, stock: "Disponible", reqRx: "Non", disp: "96%" },
+          { code: "LAB-040", name: "Tramadol 50mg Gélule", form: "Gélule", cat: "Antalgique / Antipyrétique", ht: 4050, ttc: 5265, stock: "Disponible", reqRx: "Oui", disp: "97%" },
+          { code: "LAB-041", name: "Doxycycline 100mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 4135, ttc: 5376, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-042", name: "Célestène 2mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 4220, ttc: 5486, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-043", name: "Luméfantrine Comprimé Adulte", form: "Comprimé", cat: "Antipaludéen", ht: 4305, ttc: 5596, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-044", name: "Loperamide 2mg Gélule", form: "Gélule", cat: "Gastro-entérologie", ht: 4390, ttc: 5707, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-045", name: "Sildénafil 50mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 4475, ttc: 5818, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-046", name: "Magnésium B6 Ampoules", form: "Injectable", cat: "Vitamines & Compléments", ht: 4560, ttc: 5928, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-047", name: "Ciprofloxacin Collyre 5ml", form: "Collyre", cat: "Ophtalmologie", ht: 4645, ttc: 6038, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-048", name: "Perméthrine 5% Lotion", form: "Pommade", cat: "Dermatologie", ht: 4730, ttc: 6149, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-049", name: "Zinc Sulfate Sirop Pédiatrique", form: "Sirop", cat: "Pédiatrie", ht: 4815, ttc: 6260, stock: "Disponible", reqRx: "Non", disp: "92%" },
+          { code: "LAB-050", name: "Nefopam 20ml Solution Injectable", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 4900, ttc: 6370, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-051", name: "Érythromycine 250mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 4985, ttc: 6480, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-052", name: "Alpha-Chymotrypsine Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 5070, ttc: 6591, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-053", name: "Sulfadoxine-Pyriméthamine Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 5155, ttc: 6702, stock: "Disponible", reqRx: "Non", disp: "96%" },
+          { code: "LAB-054", name: "Spasfon Lyoc 80mg Comprimé", form: "Comprimé", cat: "Gastro-entérologie", ht: 5240, ttc: 6812, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-055", name: "Hydrochlorothiazide 25mg", form: "Comprimé", cat: "Cardiovasculaire", ht: 5325, ttc: 6922, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-056", name: "Calcium + Vitamine D3 Comprimé", form: "Comprimé", cat: "Vitamines & Compléments", ht: 5410, ttc: 7033, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-057", name: "Vigamox Collyre Flacon", form: "Collyre", cat: "Ophtalmologie", ht: 5495, ttc: 7144, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-058", name: "Dermoval Crème Forte", form: "Pommade", cat: "Dermatologie", ht: 5580, ttc: 7254, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-059", name: "Carbocistéine Sirop Enfant", form: "Sirop", cat: "Pédiatrie", ht: 5665, ttc: 7364, stock: "Disponible", reqRx: "Non", disp: "88%" },
+          { code: "LAB-060", name: "Novalgine 500mg Ampoules", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 5750, ttc: 7475, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-061", name: "Gentamicine 80mg Injectable", form: "Injectable", cat: "Antibiotique", ht: 5835, ttc: 7586, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-062", name: "Voltaren 75mg Ampoule", form: "Injectable", cat: "Anti-inflammatoire", ht: 5920, ttc: 7696, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-063", name: "Paludrine 100mg Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 6005, ttc: 7806, stock: "Disponible", reqRx: "Non", disp: "92%" },
+          { code: "LAB-064", name: "Mopral 40mg Gélule", form: "Gélule", cat: "Gastro-entérologie", ht: 6090, ttc: 7917, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-065", name: "Digoxine 0.25mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 6175, ttc: 8028, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-066", name: "Ginseng & Gelée Royale Gélules", form: "Gélule", cat: "Vitamines & Compléments", ht: 6260, ttc: 8138, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-067", name: "Lacrycon Collyre Hydratant", form: "Collyre", cat: "Ophtalmologie", ht: 6345, ttc: 8248, stock: "Disponible", reqRx: "Non", disp: "96%" },
+          { code: "LAB-068", name: "Trofodermin Crème Cicatrisante", form: "Pommade", cat: "Dermatologie", ht: 6430, ttc: 8359, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-069", name: "Amoxicilline 250mg Sachet Enfant", form: "Sachet", cat: "Pédiatrie", ht: 6515, ttc: 8470, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-070", name: "Néfopam Injectable Boîte", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 6600, ttc: 8580, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-071", name: "Céfixime 200mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 6685, ttc: 8690, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-072", name: "Bi-Profenid 150mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 6770, ttc: 8801, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-073", name: "Coartem 80/480mg Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 6855, ttc: 8912, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-074", name: "Gaviscon Suspension Flacon", form: "Sirop", cat: "Gastro-entérologie", ht: 6940, ttc: 9022, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-075", name: "Sintrom 4mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 7025, ttc: 9132, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-076", name: "Spiruline Bio Pure Sachet", form: "Sachet", cat: "Vitamines & Compléments", ht: 7110, ttc: 9243, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-077", name: "Hylo-Comod Collyre Stérile", form: "Collyre", cat: "Ophtalmologie", ht: 7195, ttc: 9354, stock: "Disponible", reqRx: "Non", disp: "92%" },
+          { code: "LAB-078", name: "Fucidine 2% Pommade Tube", form: "Pommade", cat: "Dermatologie", ht: 7280, ttc: 9464, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-079", name: "P복dextrine Sirop Toux Enfant", form: "Sirop", cat: "Pédiatrie", ht: 7365, ttc: 9574, stock: "Disponible", reqRx: "Non", disp: "94%" },
+          { code: "LAB-080", name: "Dafalgan Codéine Comprimés", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 7450, ttc: 9685, stock: "Disponible", reqRx: "Oui", disp: "95%" },
+          { code: "LAB-081", name: "Amikacine 500mg Injectable", form: "Injectable", cat: "Antibiotique", ht: 7535, ttc: 9796, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-082", name: "Nurofen 400mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 7620, ttc: 9906, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-083", name: "Eurartesim Comprimé Palu", form: "Comprimé", cat: "Antipaludéen", ht: 7705, ttc: 10016, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-084", name: "Meteospasmyl Gélules", form: "Gélule", cat: "Gastro-entérologie", ht: 7790, ttc: 10127, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-085", name: "Cordarone 200mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 7875, ttc: 10238, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-086", name: "Berocca Performance Comprimés Effervescents", form: "Sachet", cat: "Vitamines & Compléments", ht: 7960, ttc: 10348, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-087", name: "Tobradex Collyre Antibio + Corticoïde", form: "Collyre", cat: "Ophtalmologie", ht: 8045, ttc: 10458, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-088", name: "Diprosone Crème Tube", form: "Pommade", cat: "Dermatologie", ht: 8130, ttc: 10569, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-089", name: "Maxilase Sirop Enfant", form: "Sirop", cat: "Pédiatrie", ht: 8215, ttc: 10680, stock: "Disponible", reqRx: "Non", disp: "90%" },
+          { code: "LAB-090", name: "Morphine 10mg Ampoules", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 8300, ttc: 10790, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-091", name: "Augmentin 1g Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 8385, ttc: 10900, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-092", name: "Chibro-Proscar Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 8470, ttc: 11011, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-093", name: "Larimal 80mg Sirop", form: "Sirop", cat: "Antipaludéen", ht: 8555, ttc: 11122, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-094", name: "Probiotique Ultra-Levure Gélules", form: "Gélule", cat: "Gastro-entérologie", ht: 8640, ttc: 11232, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-095", name: "Lasilix 40mg Injectable", form: "Injectable", cat: "Cardiovasculaire", ht: 8725, ttc: 11342, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-096", name: "Supradyn Energy Comprimés", form: "Comprimé", cat: "Vitamines & Compléments", ht: 8810, ttc: 11453, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-097", name: "Saflur Collyre Antiglaucomateux", form: "Collyre", cat: "Ophtalmologie", ht: 8895, ttc: 11564, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-098", name: "Daivobet Gel Dermatologique", form: "Pommade", cat: "Dermatologie", ht: 8980, ttc: 11674, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-099", name: "Elixir du Suédois Flacon", form: "Sirop", cat: "Pédiatrie", ht: 9065, ttc: 11784, stock: "Disponible", reqRx: "Non", disp: "86%" },
+          { code: "LAB-100", name: "Perfalgan 1g Flacon Perfusion", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 9150, ttc: 11895, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-101", name: "Levofloxacine 500mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 9235, ttc: 12006, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-102", name: "Indométacine 50mg Suppositoire", form: "Pommade", cat: "Anti-inflammatoire", ht: 9320, ttc: 12116, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-103", name: "Eurartesim Sirop Pédiatrique", form: "Sirop", cat: "Antipaludéen", ht: 9405, ttc: 12227, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-104", name: "Imodium Caps 2mg", form: "Gélule", cat: "Gastro-entérologie", ht: 9490, ttc: 12337, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-105", name: "Aldomet 250mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 9575, ttc: 12448, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-106", name: "Royal Jelly Ampoules Énergie", form: "Injectable", cat: "Vitamines & Compléments", ht: 9660, ttc: 12558, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          { code: "LAB-107", name: "Zaditen Collyre Allergie", form: "Collyre", cat: "Ophtalmologie", ht: 9745, ttc: 12669, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-108", name: "Ketoderm Gel Moussant", form: "Pommade", cat: "Dermatologie", ht: 9830, ttc: 12779, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-109", name: "Bisolvon Sirop Adulte", form: "Sirop", cat: "Pédiatrie", ht: 9915, ttc: 12889, stock: "Disponible", reqRx: "Non", disp: "96%" },
+          { code: "LAB-110", name: "Acupan 20mg Ampoules", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 10000, ttc: 13000, stock: "Disponible", reqRx: "Oui", disp: "97%" },
+          { code: "LAB-111", name: "Rovamycine 3M UI Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 10100, ttc: 13130, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-112", name: "Flurbiprofène 100mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 10200, ttc: 13260, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-113", name: "Arinate 100mg Comprimé", form: "Comprimé", cat: "Antipaludéen", ht: 10300, ttc: 13390, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-114", name: "Proctolog Crème Hémorroïdaire", form: "Pommade", cat: "Gastro-entérologie", ht: 10400, ttc: 13520, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-115", name: "Lercanidipine 10mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 10500, ttc: 13650, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-116", name: "BION 3 Énergie Comprimés", form: "Comprimé", cat: "Vitamines & Compléments", ht: 10600, ttc: 13780, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-117", name: "Optive Fusion Collyre", form: "Collyre", cat: "Ophtalmologie", ht: 10700, ttc: 13910, stock: "Disponible", reqRx: "Non", disp: "98%" },
+          { code: "LAB-118", name: "Cicaplast Baume B5+", form: "Pommade", cat: "Dermatologie", ht: 10800, ttc: 14040, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-119", name: "Hexaspray Solution Buccale", form: "Sirop", cat: "Pédiatrie", ht: 10900, ttc: 14170, stock: "Disponible", reqRx: "Non", disp: "86%" },
+          { code: "LAB-120", name: "Skenan 10mg Gélules", form: "Gélule", cat: "Antalgique / Antipyrétique", ht: 11000, ttc: 14300, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-121", name: "Clindamycine 300mg Gélule", form: "Gélule", cat: "Antibiotique", ht: 11100, ttc: 14430, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-122", name: "Nifluril Suppositoire Enfant", form: "Pommade", cat: "Anti-inflammatoire", ht: 11200, ttc: 14560, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-123", name: "Riamet 80/480mg Comprimés", form: "Comprimé", cat: "Antipaludéen", ht: 11300, ttc: 14690, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-124", name: "Duspatal 200mg Gélule", form: "Gélule", cat: "Gastro-entérologie", ht: 11400, ttc: 14820, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-125", name: "Tenormine 50mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 11500, ttc: 14950, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-126", name: "Azinc Vitalité Gélules", form: "Gélule", cat: "Vitamines & Compléments", ht: 11600, ttc: 15080, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          { code: "LAB-127", name: "VisuXL Gel Oculaire", form: "Collyre", cat: "Ophtalmologie", ht: 11700, ttc: 15210, stock: "Disponible", reqRx: "Non", disp: "94%" },
+          { code: "LAB-128", name: "Diprosalic Pommade Tube", form: "Pommade", cat: "Dermatologie", ht: 11800, ttc: 15340, stock: "Disponible", reqRx: "Oui", disp: "95%" },
+          { code: "LAB-129", name: "Pivalone 1% Spray Nasal", form: "Sirop", cat: "Pédiatrie", ht: 11900, ttc: 15470, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-130", name: "Actiskénan 5mg Gélules", form: "Gélule", cat: "Antalgique / Antipyrétique", ht: 12000, ttc: 15600, stock: "Disponible", reqRx: "Oui", disp: "97%" },
+          { code: "LAB-131", name: "Pristinamycine 500mg", form: "Comprimé", cat: "Antibiotique", ht: 12100, ttc: 15730, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-132", name: "Cataflam 50mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 12200, ttc: 15860, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-133", name: "Artesunate Suppositoire Rectal", form: "Pommade", cat: "Antipaludéen", ht: 12300, ttc: 15990, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-134", name: "Carbo Activé Comprimés", form: "Comprimé", cat: "Gastro-entérologie", ht: 12400, ttc: 16120, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-135", name: "Co-Amlodipine 5/160mg", form: "Comprimé", cat: "Cardiovasculaire", ht: 12500, ttc: 16250, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-136", name: "Gerimax Ginseng Comprimés", form: "Comprimé", cat: "Vitamines & Compléments", ht: 12600, ttc: 16380, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-137", name: "Thealoz Duo Collyre", form: "Collyre", cat: "Ophtalmologie", ht: 12700, ttc: 16510, stock: "Disponible", reqRx: "Non", disp: "90%" },
+          { code: "LAB-138", name: "Locasone Crème Derm.", form: "Pommade", cat: "Dermatologie", ht: 12800, ttc: 16640, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-139", name: "Humex Sirop Toux Adulte", form: "Sirop", cat: "Pédiatrie", ht: 12900, ttc: 16770, stock: "Disponible", reqRx: "Non", disp: "92%" },
+          { code: "LAB-140", name: "Durogesic 12mcg Patch", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 13000, ttc: 16900, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-141", name: "Vancomycine 500mg Flacon", form: "Injectable", cat: "Antibiotique", ht: 13100, ttc: 17030, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-142", name: "Celebrex 200mg Gélule", form: "Gélule", cat: "Anti-inflammatoire", ht: 13200, ttc: 17160, stock: "Disponible", reqRx: "Oui", disp: "95%" },
+          { code: "LAB-143", name: "Paluther 80mg Ampoules", form: "Injectable", cat: "Antipaludéen", ht: 13300, ttc: 17290, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-144", name: "Forlax 10g Sachets Poudre", form: "Sachet", cat: "Gastro-entérologie", ht: 13400, ttc: 17420, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-145", name: "Neptal 25mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 13500, ttc: 17550, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-146", name: "Alvityl Vitalité Sirop", form: "Sirop", cat: "Vitamines & Compléments", ht: 13600, ttc: 17680, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-147", name: "Blephaclean Lingettes Stériles", form: "Collyre", cat: "Ophtalmologie", ht: 13700, ttc: 17810, stock: "Disponible", reqRx: "Non", disp: "86%" },
+          { code: "LAB-148", name: "Loceryl 5% Vernis Médicamenteux", form: "Pommade", cat: "Dermatologie", ht: 13800, ttc: 17940, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-149", name: "Rhinadvil Comprimés Rhume", form: "Comprimé", cat: "Pédiatrie", ht: 13900, ttc: 18070, stock: "Disponible", reqRx: "Non", disp: "88%" },
+          { code: "LAB-150", name: "Oxycodone 5mg Comprimé", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 14000, ttc: 18200, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-151", name: "Linezolide 600mg Comprimé", form: "Comprimé", cat: "Antibiotique", ht: 14100, ttc: 18330, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-152", name: "Artotec 50 Comprimés", form: "Comprimé", cat: "Anti-inflammatoire", ht: 14200, ttc: 18460, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-153", name: "Guotasol Sirop Palu", form: "Sirop", cat: "Antipaludéen", ht: 14300, ttc: 18590, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-154", name: "Imodium Duo Comprimés", form: "Comprimé", cat: "Gastro-entérologie", ht: 14400, ttc: 18720, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          { code: "LAB-155", name: "Exforge 5/160mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 14500, ttc: 18850, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-156", name: "Mag 2 Ampoules buvables", form: "Injectable", cat: "Vitamines & Compléments", ht: 14600, ttc: 18980, stock: "Disponible", reqRx: "Non", disp: "95%" },
+          { code: "LAB-157", name: "Systane Ultra Collyre", form: "Collyre", cat: "Ophtalmologie", ht: 14700, ttc: 19110, stock: "Disponible", reqRx: "Non", disp: "96%" },
+          { code: "LAB-158", name: "Elocome 0.1% Crème Tube", form: "Pommade", cat: "Dermatologie", ht: 14800, ttc: 19240, stock: "Disponible", reqRx: "Oui", disp: "97%" },
+          { code: "LAB-159", name: "Humex Enfants Sirop", form: "Sirop", cat: "Pédiatrie", ht: 14900, ttc: 19370, stock: "Disponible", reqRx: "Non", disp: "98%" },
+          { code: "LAB-160", name: "Fentanyl 50mcg Patch", form: "Injectable", cat: "Antalgique / Antipyrétique", ht: 15000, ttc: 19500, stock: "Disponible", reqRx: "Oui", disp: "85%" },
+          { code: "LAB-161", name: "Meropenem 1g Flacon", form: "Injectable", cat: "Antibiotique", ht: 15100, ttc: 19630, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-162", name: "Voltaren Emulgel 1% Tube", form: "Pommade", cat: "Anti-inflammatoire", ht: 15200, ttc: 19760, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-163", name: "Artesunate + Amodiaquine Kit", form: "Comprimé", cat: "Antipaludéen", ht: 15300, ttc: 19890, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-164", name: "Transipeg 10g Sachets", form: "Sachet", cat: "Gastro-entérologie", ht: 15400, ttc: 20020, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-165", name: "Tritace 5mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 15500, ttc: 20150, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-166", name: "Omnivit Comprimés Énergie", form: "Comprimé", cat: "Vitamines & Compléments", ht: 15600, ttc: 20280, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-167", name: "Blephademodex Lingettes", form: "Collyre", cat: "Ophtalmologie", ht: 15700, ttc: 20410, stock: "Disponible", reqRx: "Non", disp: "92%" },
+          { code: "LAB-168", name: "Dermocort Crème Tube", form: "Pommade", cat: "Dermatologie", ht: 15800, ttc: 20540, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-169", name: "Stodal Sirop Homéopathique", form: "Sirop", cat: "Pédiatrie", ht: 15900, ttc: 20670, stock: "Disponible", reqRx: "Non", disp: "94%" },
+          { code: "LAB-170", name: "Zaldiar 37.5mg/325mg Comprimés", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 16000, ttc: 20800, stock: "Disponible", reqRx: "Oui", disp: "95%" },
+          { code: "LAB-171", name: "Imipenem 500mg Flacon", form: "Injectable", cat: "Antibiotique", ht: 16100, ttc: 20930, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-172", name: "Ketoprofene Gel 2.5%", form: "Pommade", cat: "Anti-inflammatoire", ht: 16200, ttc: 21060, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-173", name: "Eurartesim Adulte Boîte", form: "Comprimé", cat: "Antipaludéen", ht: 16300, ttc: 21190, stock: "Disponible", reqRx: "Oui", disp: "98%" },
+          { code: "LAB-174", name: "Proctolog Suppositoires", form: "Pommade", cat: "Gastro-entérologie", ht: 16400, ttc: 21320, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-175", name: "Co-Diovan 160/12.5mg", form: "Comprimé", cat: "Cardiovasculaire", ht: 16500, ttc: 21450, stock: "Disponible", reqRx: "Oui", disp: "86%" },
+          { code: "LAB-176", name: "Gerimax Ginseng Extra Fort", form: "Gélule", cat: "Vitamines & Compléments", ht: 16600, ttc: 21580, stock: "Disponible", reqRx: "Non", disp: "87%" },
+          { code: "LAB-177", name: "Hylo-Vision Collyre Gel", form: "Collyre", cat: "Ophtalmologie", ht: 16700, ttc: 21710, stock: "Disponible", reqRx: "Non", disp: "88%" },
+          { code: "LAB-178", name: "Ureadine 10% Lotion Visage", form: "Pommade", cat: "Dermatologie", ht: 16800, ttc: 21840, stock: "Disponible", reqRx: "Non", disp: "89%" },
+          { code: "LAB-179", name: "Pediakid Sommeil Sirop", form: "Sirop", cat: "Pédiatrie", ht: 16900, ttc: 21970, stock: "Disponible", reqRx: "Non", disp: "90%" },
+          { code: "LAB-180", name: "Ixprim 37.5mg/325mg Comprimés", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 17000, ttc: 22100, stock: "Disponible", reqRx: "Oui", disp: "91%" },
+          { code: "LAB-181", name: "Colimycine Injectable", form: "Injectable", cat: "Antibiotique", ht: 17100, ttc: 22230, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-182", name: "Artotec 75 Comprimés", form: "Comprimé", cat: "Anti-inflammatoire", ht: 17200, ttc: 22360, stock: "Disponible", reqRx: "Oui", disp: "93%" },
+          { code: "LAB-183", name: "Coartem Dispersible Sirop", form: "Sirop", cat: "Antipaludéen", ht: 17300, ttc: 22490, stock: "Disponible", reqRx: "Oui", disp: "94%" },
+          { code: "LAB-184", name: "Trimebutine 200mg Comprimé", form: "Comprimé", cat: "Gastro-entérologie", ht: 17400, ttc: 22620, stock: "Disponible", reqRx: "Oui", disp: "95%" },
+          { code: "LAB-185", name: "Prestarium 5mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 17500, ttc: 22750, stock: "Disponible", reqRx: "Oui", disp: "96%" },
+          { code: "LAB-186", name: "Supradyn Magnésium Comprimés", form: "Sachet", cat: "Vitamines & Compléments", ht: 17600, ttc: 22880, stock: "Disponible", reqRx: "Non", disp: "97%" },
+          { code: "LAB-187", name: "Vidisic Gel Oculaire Stérile", form: "Collyre", cat: "Ophtalmologie", ht: 17700, ttc: 23010, stock: "Disponible", reqRx: "Non", disp: "98%" },
+          { code: "LAB-188", name: "Bepanthen Plus Crème Cicatrisante", form: "Pommade", cat: "Dermatologie", ht: 17800, ttc: 23140, stock: "Disponible", reqRx: "Non", disp: "85%" },
+          { code: "LAB-189", name: "Pediakid Colicil Bébé", form: "Sirop", cat: "Pédiatrie", ht: 17900, ttc: 23270, stock: "Disponible", reqRx: "Non", disp: "86%" },
+          { code: "LAB-190", name: "Morphine LP 30mg Comprimés", form: "Comprimé", cat: "Antalgique / Antipyrétique", ht: 18000, ttc: 23400, stock: "Disponible", reqRx: "Oui", disp: "87%" },
+          { code: "LAB-191", name: "Targocid 400mg Flacon", form: "Injectable", cat: "Antibiotique", ht: 18100, ttc: 23530, stock: "Disponible", reqRx: "Oui", disp: "88%" },
+          { code: "LAB-192", name: "Surgam 300mg Comprimé", form: "Comprimé", cat: "Anti-inflammatoire", ht: 18200, ttc: 23660, stock: "Disponible", reqRx: "Oui", disp: "89%" },
+          { code: "LAB-193", name: "Eurartesim Adulte 3 Jours", form: "Comprimé", cat: "Antipaludéen", ht: 18300, ttc: 23790, stock: "Disponible", reqRx: "Oui", disp: "90%" },
+          { code: "LAB-194", name: "Psyllium Blond Poudre Sachets", form: "Sachet", cat: "Gastro-entérologie", ht: 18400, ttc: 23920, stock: "Disponible", reqRx: "Non", disp: "91%" },
+          { code: "LAB-195", name: "Coveram 5/10mg Comprimé", form: "Comprimé", cat: "Cardiovasculaire", ht: 18500, ttc: 24050, stock: "Disponible", reqRx: "Oui", disp: "92%" },
+          { code: "LAB-196", name: "Spiruline & Acérola Bio", form: "Comprimé", cat: "Vitamines & Compléments", ht: 18600, ttc: 24180, stock: "Disponible", reqRx: "Non", disp: "93%" },
+          
+            ];
         this.cart = [];
         this.cleanExpiredCache();
       }
 
-      init() {
+  init() {
         this.updateCartBadge();
-        this.autoDetectUserLocation(() => {
-          this.navigateTo('home');
-        });
+        this.syncHeaderSelector();
+        this.renderCityDropdown();
+        
+        // Lancement unique de l'animation de progression qui gère elle-même l'init GPS
+        this.animateLoadingProgress();
+      }
+	 animateLoadingProgress() {
+        const container = document.getElementById('view-container');
+        if (!container) return;
+
+        container.innerHTML = `
+          <div class="max-w-md mx-auto my-20 bg-white p-8 rounded-2xl shadow-xl border border-pink-100 text-center space-y-5">
+            <div class="w-16 h-16 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto text-[#6B125C] text-3xl font-black shadow-inner">
+              <i class="fa-solid fa-pills fa-spin"></i>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-base font-extrabold text-slate-800">Démarrage d'Allo Ramia V5</h3>
+              <p id="loading-status-text" class="text-xs text-slate-500">Connexion au réseau pharmaceutique...</p>
+            </div>
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200">
+              <div id="loading-progress-bar" class="bg-gradient-to-r from-[#6B125C] to-[#A1197A] h-full rounded-full transition-all duration-300" style="width: 10%;"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-bold text-[#6B125C]">
+              <span>Sécurisé Laborex & Geoapify</span>
+              <span id="loading-percentage">10%</span>
+            </div>
+          </div>
+        `;
+
+        let progress = 10;
+        const statusText = document.getElementById('loading-status-text');
+        const progressBar = document.getElementById('loading-progress-bar');
+        const percentageText = document.getElementById('loading-percentage');
+
+        const interval = setInterval(() => {
+          progress += 15;
+          if (progress > 100) progress = 100;
+
+          if (progressBar) progressBar.style.width = `${progress}%`;
+          if (percentageText) percentageText.textContent = `${progress}%`;
+
+          if (progress === 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              this.navigateTo('home');
+              
+              // 🚀 1. DÉCLENCHEMENT SILENCIEUX À L'OUVERTURE
+              this.autoDetectUserLocation(() => {
+                this.fetchRealPharmaciesOSM(3500);
+              });
+            }, 250);
+          }
+        }, 80);
       }
 
       showToast(msg) {
@@ -510,7 +657,7 @@
         this.navigateTo('home');
       }
 
-      autoDetectUserLocation(callback) {
+     autoDetectUserLocation(callback) {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (pos) => {
@@ -524,12 +671,17 @@
                 if (data && data.address) {
                   const countryCode = (data.address.country_code || '').toUpperCase();
                   const detectedCity = data.address.city || data.address.town || data.address.village || data.address.state || '';
-                  if (this.countryData[countryCode]) this.currentCountry = countryCode;
-                  if (detectedCity) {
-                    if (detectedCity.toLowerCase().includes('douala')) this.currentCity = 'Douala';
-                    else if (detectedCity.toLowerCase().includes('yaound')) this.currentCity = 'Yaoundé';
-                    else this.currentCity = detectedCity;
+                  
+                  if (this.countryData[countryCode]) {
+                    this.currentCountry = countryCode;
+                  } else {
+                    this.currentCountry = 'CM'; // Par défaut Cameroun si détecté sur le territoire
                   }
+
+                  if (detectedCity) {
+                    this.currentCity = detectedCity;
+                  }
+
                   const road = data.address.road || data.address.pedestrian || '';
                   const suburb = data.address.suburb || data.address.neighbourhood || '';
                   let fullLocationString = [road, suburb].filter(Boolean).join(', ');
@@ -539,16 +691,25 @@
                     if (districtInput) districtInput.value = fullLocationString;
                   }
                 }
-              } catch (e) {}
+              } catch (e) {
+                // Si l'API de reverse geocoding échoue, on garde au moins les coordonnées GPS
+                this.currentCountry = 'CM';
+                this.currentCity = 'Position GPS active';
+              }
               this.syncHeaderSelector();
               this.renderCityDropdown();
               if (typeof callback === 'function') callback();
             },
             () => {
-              this.currentCountry = 'CM';
-              this.currentCity = 'Douala';
-              this.currentDistrict = 'Akwa / Rue Kotto'; 
-              this.currentLocation = this.countryData['CM'].cities['Douala'];
+              // EN CAS DE REFUS GPS OU D'ERREUR : Les valeurs restent VIDES (pas de Douala forcé)
+              this.currentCountry = '';
+              this.currentCity = '';
+              this.currentDistrict = ''; 
+              this.currentLocation = null;
+              
+              const districtInput = document.getElementById('district-input');
+              if (districtInput) districtInput.value = '';
+
               this.syncHeaderSelector();
               this.renderCityDropdown();
               if (typeof callback === 'function') callback();
@@ -556,6 +717,11 @@
             { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
           );
         } else {
+          // Si le navigateur ne supporte pas la géolocalisation : valeurs vides
+          this.currentCountry = '';
+          this.currentCity = '';
+          this.currentDistrict = '';
+          this.currentLocation = null;
           this.syncHeaderSelector();
           this.renderCityDropdown();
           if (typeof callback === 'function') callback();
@@ -608,29 +774,34 @@
         this.updateMapAndCards();
       }
 
-      renderCityDropdown() {
+  renderCityDropdown() {
         const citySelect = document.getElementById('active-city-select');
         if (!citySelect) return;
+        
         if (!this.currentCountry || !this.countryData[this.currentCountry]) {
           citySelect.disabled = true;
-          citySelect.innerHTML = `<option value="">Veuillez choisir un pays</option>`;
+          citySelect.innerHTML = `<option value="">Veuillez autoriser le GPS ou choisir un pays</option>`;
         } else {
           citySelect.disabled = false;
           const countryInfo = this.countryData[this.currentCountry];
-          const cityOptions = Object.keys(countryInfo.cities).map(city => 
+          
+          let options = `<option value="">-- Sélectionnez une ville --</option>`;
+          options += Object.keys(countryInfo.cities).map(city => 
             `<option value="${city}" ${city === this.currentCity ? 'selected' : ''}>${city}</option>`
           ).join('');
-          citySelect.innerHTML = cityOptions;
+          
+          citySelect.innerHTML = options;
         }
+        
         const badgeCityHeader = document.getElementById('header-city-badge');
-        if (badgeCityHeader) badgeCityHeader.textContent = this.currentCity;
+        if (badgeCityHeader) badgeCityHeader.textContent = this.currentCity || 'Non détecté';
       }
 
       navigateTo(view) {
         this.currentView = view;
         const titleMap = {
-          home: 'Accueil - Géolocalisation & Officines',
-          laborex: 'Catalogue Laborex (100 Références HT/TTC)',
+          home: 'Géolocalisation & Officines',
+          laborex: 'Catalogue Laborex',
           ordo: "Scan & Extraction d'Ordonnance IA",
           tunnel: 'Tunnel de Commande V5 (Étapes 1 à 6)',
           sos: 'Pharmacies de Garde & SOS Urgences',
@@ -674,6 +845,41 @@
         }
       }
 
+searchMedicineFromHome() {
+        const inputVal = document.getElementById('medicine-search-input')?.value.trim().toLowerCase();
+        if (!inputVal) {
+          this.showToast("Veuillez saisir un nom de médicament à rechercher.");
+          return;
+        }
+
+        // 1. Parcours et recherche exacte/partielle dans le catalogue Laborex (200 références)
+        const foundProduct = this.laborexCatalog.find(item => 
+          item.name.toLowerCase().includes(inputVal) || 
+          item.cat.toLowerCase().includes(inputVal) ||
+          item.code.toLowerCase().includes(inputVal)
+        );
+
+        if (foundProduct) {
+          this.searchedMedicine = foundProduct.name;
+          this.searchedProductDetails = foundProduct; // Conserve le Code, HT, TTC, Forme, etc.
+          this.showToast(`Produit trouvé : ${foundProduct.code} - ${foundProduct.name} (${foundProduct.ttc} XAF)`);
+        } else {
+          // Produit de secours si non listé exactement dans Laborex
+          this.searchedProductDetails = {
+            code: "LAB-PERSO",
+            name: inputVal,
+            form: "Standard",
+            ht: 2000,
+            ttc: 2500,
+            disp: "85%",
+            reqRx: "Non"
+          };
+          this.searchedMedicine = inputVal;
+        }
+
+        // 2. Mise à jour automatique des cartes d'officines géolocalisées avec le détail transparent du prix
+        this.updateMapAndCards();
+      }
       // 1. VUE ACCUEIL (GEOLOCALISATION & RECHERCHE REAL-TIME GEOAPIFY)
       renderHomeView() {
         return `
@@ -729,15 +935,7 @@
                     <span class="text-pink-100 font-semibold shrink-0">Quartier :</span>
                     <input type="text" id="district-input" value="${this.currentDistrict}" onchange="window.app.currentDistrict = this.value" placeholder="ex: Akwa, Bastos..." class="flex-1 px-3 py-1.5 text-xs text-slate-800 bg-white rounded-lg focus:outline-none">
                   </div>
-                  <div class="flex items-center space-x-2">
-                    <span class="text-pink-100 font-semibold shrink-0">Transport :</span>
-                    <select id="transport-select" onchange="window.app.changeTransportFilter(this.value)" class="bg-white text-[#6B125C] font-bold text-xs px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer flex-1">
-                      <option value="all" ${this.selectedTransport === 'all' ? 'selected' : ''}>⚡ Tous les transports</option>
-                      <option value="yango_moto" ${this.selectedTransport === 'yango_moto' ? 'selected' : ''}>🛵 Yango Moto</option>
-                      <option value="yango_taxi" ${this.selectedTransport === 'yango_taxi' ? 'selected' : ''}>🚕 Yango Taxi</option>
-                      <option value="gozem" ${this.selectedTransport === 'gozem' ? 'selected' : ''}>🏍️ Gozem</option>
-                    </select>
-                  </div>
+              
                 </div>
               </div>
             </div>
@@ -783,9 +981,9 @@
                   <h2 class="text-base font-bold text-[#6B125C] flex items-center gap-2">
                     <i class="fa-solid fa-boxes-stacked"></i> Moteur Catalogue Grossiste Laborex Cameroun
                   </h2>
-                  <p class="text-xs text-slate-500">Consultation en direct des 100 médicaments essentiels avec prix Grossiste HT & Prix Publics TTC homologués.</p>
+                  <p class="text-xs text-slate-500">Consultation en direct des médicaments essentiels avec prix Grossiste HT & Prix Publics TTC homologués.</p>
                 </div>
-                <span class="bg-pink-100 text-[#6B125C] text-xs font-bold px-3 py-1.5 rounded-full border border-pink-200">100 Médicaments Référencés</span>
+                <span class="bg-pink-100 text-[#6B125C] text-xs font-bold px-3 py-1.5 rounded-full border border-pink-200">Médicaments Référencés</span>
               </div>
 
               <!-- BARRE DE RECHERCHE DANS LE CATALOGUE -->
@@ -1446,35 +1644,87 @@ async handleOrdoUpload(event) {
           });
         });
       }
-
-      async performSearch() {
+async performSearch() {
         const input = document.getElementById('search-input');
         const districtInput = document.getElementById('district-input');
-        if (input) this.searchedMedicine = input.value.trim();
-        if (districtInput) this.currentDistrict = districtInput.value.trim();
+        
+        // 1. Gestion du produit recherché dans le catalogue
+        if (input) {
+          this.searchedMedicine = input.value.trim();
+          if (this.searchedMedicine) {
+            const foundProduct = this.laborexCatalog.find(item => 
+              item.name.toLowerCase().includes(this.searchedMedicine.toLowerCase()) || 
+              item.cat.toLowerCase().includes(this.searchedMedicine.toLowerCase()) ||
+              item.code.toLowerCase().includes(this.searchedMedicine.toLowerCase())
+            );
 
-        // 1. MISE A JOUR VISUELLE IMMEDIATE (0ms)
+            if (foundProduct) {
+              this.searchedProductDetails = foundProduct;
+              this.showToast(`Produit trouvé : ${foundProduct.code} - ${foundProduct.name} (${foundProduct.ttc} XAF)`);
+            } else {
+              this.searchedProductDetails = {
+                code: "LAB-PERSO",
+                name: this.searchedMedicine,
+                form: "Standard",
+                ht: 2000,
+                ttc: 2500,
+                disp: "85%",
+                reqRx: "Non"
+              };
+              this.showToast(`Produit personnalisé pris en compte : ${this.searchedMedicine}`);
+            }
+          } else {
+            this.searchedProductDetails = null;
+          }
+        }
+
+        if (districtInput) {
+          this.currentDistrict = districtInput.value.trim();
+        }
+
+        // 2. ACTIVATION DE L'ÉTAT DE CHARGEMENT
         this.isLoadingPharmacies = true;
         this.setSearchStateLoading();
 
-        // 2. On laisse le navigateur afficher l'animation du bouton AVANT de lancer les requêtes réseau
-        setTimeout(async () => {
-          if (this.currentDistrict !== "") {
-            const countryName = this.countryData[this.currentCountry]?.name || "Cameroun";
-            const searchAddress = `${this.currentDistrict}, ${this.currentCity}, ${countryName}`;
-            try {
-              const controllerGeo = new AbortController();
-              const timeoutGeo = setTimeout(() => controllerGeo.abort(), 2500);
-              const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}`, { signal: controllerGeo.signal });
-              clearTimeout(timeoutGeo);
-              const geoData = await geoRes.json();
-              if (geoData && geoData.length > 0) {
-                this.currentLocation = { lat: parseFloat(geoData[0].lat), lng: parseFloat(geoData[0].lon) };
-              }
-            } catch(e) {}
+        // 🎯 3. ACTUALISATION AUTOMATIQUE & CORRECTION GÉOGRAPHIQUE AU CLIC
+        // Priorité absolue au texte saisi par l'utilisateur (ex: "Rue Manguier") pour éliminer l'erreur GPS de l'appareil
+        if (this.currentDistrict !== "") {
+          const countryName = this.countryData[this.currentCountry]?.name || "Cameroun";
+          const searchAddress = `${this.currentDistrict}, ${this.currentCity}, ${countryName}`;
+          try {
+            const controllerGeo = new AbortController();
+            const timeoutGeo = setTimeout(() => controllerGeo.abort(), 3000);
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}`, { signal: controllerGeo.signal });
+            clearTimeout(timeoutGeo);
+            const geoData = await geoRes.json();
+            
+            if (geoData && geoData.length > 0) {
+              // On force les coordonnées exactes du quartier/rue saisi
+              this.currentLocation = { lat: parseFloat(geoData[0].lat), lng: parseFloat(geoData[0].lon) };
+            }
+          } catch(e) {
+            // En cas de coupure réseau, on se replie sur le GPS natif
           }
-          await this.fetchRealPharmaciesOSM(3500, true);
-        }, 50);
+        } else {
+          // Si aucun quartier n'est écrit, on force un rafraîchissement GPS haute précision instantané
+          await new Promise((resolve) => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  this.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                  resolve();
+                },
+                () => resolve(),
+                { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
+              );
+            } else {
+              resolve();
+            }
+          });
+        }
+
+        // 4. Lancement de la recherche des pharmacies et calculs OSRM avec la position corrigée
+        await this.fetchRealPharmaciesOSM(3500, true);
       }
 	  
 
@@ -1617,92 +1867,121 @@ async handleOrdoUpload(event) {
       }
 	  
 
-      updateMapAndCards() {
-        if (this.currentView === 'home' && this.map && this.currentLocation) {
-          this.map.setView([this.currentLocation.lat, this.currentLocation.lng], 14);
-          if (this.userMarker) this.map.removeLayer(this.userMarker);
-          this.userMarker = L.circleMarker([this.currentLocation.lat, this.currentLocation.lng], {
-            radius: 8, fillColor: "#A1197A", color: "#FFFFFF", weight: 2.5, fillOpacity: 0.95
-          }).addTo(this.map);
-
-          this.mapMarkers.forEach(m => this.map.removeLayer(m));
-          this.mapMarkers = [];
-
-          this.realPharmacies.forEach(p => {
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-            const marker = L.marker([p.lat, p.lng]).addTo(this.map);
-            marker.bindPopup(`<strong style="color: #6B125C;">${p.name}</strong><br><small>${p.address}</small><br><a href="${mapsUrl}" target="_blank">Y aller</a>`);
-            this.mapMarkers.push(marker);
-          });
+     updateMapAndCards() {
+        const currencyLabel = (this.countryData[this.currentCountry] || {}).currency || 'XAF';
+        
+        // Récupérer le produit recherché (null si l'utilisateur n'a encore rien saisi)
+        const product = this.searchedProductDetails || null;
+        
+        // Gestion des compteurs visuels et badges
+        const countBadge = document.getElementById('pharmacy-count-badge');
+        if (countBadge) {
+          countBadge.textContent = `${this.realPharmacies.length} pharmacie(s)`;
         }
 
-        const gridHome = document.getElementById('pharmacies-grid');
-        const countBadge = document.getElementById('pharmacy-count-badge');
-        if (countBadge) countBadge.textContent = `${this.realPharmacies.length} pharmacie(s)`;
+        const pharmaciesContainer = document.getElementById('pharmacies-grid');
+        if (!pharmaciesContainer) return;
 
-        if (!gridHome) return;
         if (this.isLoadingPharmacies) {
-          gridHome.innerHTML = `<div class="p-5 text-center"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-[#6B125C]"></i></div>`;
+          pharmaciesContainer.innerHTML = `
+            <div class="p-8 text-center space-y-2">
+              <i class="fa-solid fa-circle-notch fa-spin text-2xl text-[#6B125C]"></i>
+              <p class="text-xs text-slate-500">Recherche des officines et calcul des distances routières...</p>
+            </div>
+          `;
           return;
         }
 
         if (this.realPharmacies.length === 0) {
-          gridHome.innerHTML = `<div class="p-5 text-center text-xs text-amber-800 bg-amber-50 rounded-xl">Aucune pharmacie trouvée dans le rayon de 3.5 km.</div>`;
+          pharmaciesContainer.innerHTML = `
+            <div class="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl">
+              Aucune pharmacie trouvée dans ce rayon. Essayez d'élargir la zone ou de changer de quartier.
+            </div>
+          `;
           return;
         }
 
-        const currencyLabel = (this.countryData[this.currentCountry] || {}).currency || 'XAF';
-        const hasSearched = this.searchedMedicine && this.searchedMedicine.trim() !== "";
+       pharmaciesContainer.innerHTML = this.realPharmacies.map(p => {
+          const distanceStr = p.distance < 1 ? `${Math.round(p.distance * 1000)} m` : `${p.distance.toFixed(1)} km`;
+          const durationStr = p.durationMinutes ? `(~${p.durationMinutes} min)` : '';
 
-        gridHome.innerHTML = this.realPharmacies.map((p, idx) => {
-          const medPrice = 2500;
-          const serviceFee = Math.round(medPrice * 0.05); // Commission à 5%
-          const subTotalWithoutTransport = medPrice + serviceFee;
-          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+          // Lien de redirection Google Maps aux coordonnées précises
+          const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+
+          // Gestion des marqueurs sur la carte Leaflet avec le lien Google Maps intégré
+          if (this.map && p.lat && p.lng) {
+            const marker = L.marker([p.lat, p.lng]).addTo(this.map);
+            marker.bindPopup(`
+              <div style="font-family: inherit; line-height: 1.4;">
+                <strong style="color: #6B125C; font-size: 12px;">💊 ${p.name}</strong><br>
+                <span style="font-size: 10px; color: #555;">${p.address}</span><br>
+                <span style="font-weight: bold; color: #047857;">Distance : ${distanceStr} ${durationStr}</span><br>
+                <a href="${googleMapsUrl}" target="_blank" style="display: inline-block; margin-top: 6px; background-color: #6B125C; color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; text-decoration: none;">
+                  📍 Ouvrir dans Google Maps
+                </a>
+              </div>
+            `);
+            this.mapMarkers.push(marker);
+          }
+
+          // Bloc conditionnel : Si aucun produit n'est cherché, on affiche uniquement les infos de la pharmacie
+          let productSectionHTML = '';
+          if (product) {
+            const medPrice = product.ttc; 
+            const serviceFee = Math.round(medPrice * 0.05);
+            const totalWithoutTransport = medPrice + serviceFee;
+
+            productSectionHTML = `
+              <div class="mt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-pink-50/50 p-3 rounded-xl text-xs border border-pink-100 gap-2">
+                <div class="flex flex-col">
+                  <span class="text-slate-700">Produit (${product.code} - ${product.name}) : <strong class="text-slate-900">${medPrice.toLocaleString()} ${currencyLabel}</strong></span>
+                  <span class="text-slate-500 text-[11px]">+ Service Allo Ramia (5%) : <strong class="text-[#6B125C]">${serviceFee.toLocaleString()} ${currencyLabel}</strong> (Total : <strong class="text-[#6B125C]">${totalWithoutTransport.toLocaleString()} ${currencyLabel}</strong>) <span class="text-[10px] text-slate-400">(Hors transport)</span></span>
+                </div>
+                <button onclick="window.app.addToCart('${product.name.replace(/'/g, "\'")}', ${totalWithoutTransport}, '${p.name.replace(/'/g, "\'")}')" class="bg-[#6B125C] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow hover:bg-pink-800 transition shrink-0">Commander</button>
+              </div>
+            `;
+          } else {
+            productSectionHTML = `
+              <div class="mt-3 bg-slate-50 p-3 rounded-xl text-[11px] text-slate-600 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <span class="text-slate-500">🔍 Aucun médicament saisi pour le moment. Vous pouvez :</span>
+                <div class="flex flex-wrap items-center gap-2">
+                  <!-- 1er lien : Redirige vers le champ de saisie du médicament en haut -->
+                  <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); document.getElementById('search-input')?.focus();" class="text-[#6B125C] bg-white font-bold hover:bg-pink-50 px-3 py-1.5 rounded-lg border border-pink-200 shadow-sm flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i> 1. Saisir le nom du  médicament
+                  </button>
+                  <span class="text-slate-400 font-medium">ou</span>
+                  <!-- 2ème lien : Redirige vers le Scan d'Ordonnance IA -->
+                  <button onclick="window.app.navigateTo('ordo')" class="text-white bg-[#6B125C] font-bold hover:bg-pink-800 px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-file-medical text-xs"></i> 2. Scanner votre Ordonnance
+                  </button>
+                </div>
+              </div>
+            `;
+          }
 
           return `
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-              <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-3 hover:border-pink-200 transition">
+              <div class="flex justify-between items-start">
                 <div>
-                  <h4 class="font-bold text-[#6B125C] text-xs sm:text-sm">💊 ${p.name}</h4>
-                  <p class="text-[11px] text-slate-600 mt-0.5">${p.address}</p>
+                  <h4 class="font-bold text-[#6B125C] text-sm sm:text-base">💊 ${p.name}</h4>
+                  <p class="text-xs text-slate-500 mt-0.5"><strong>Adresse :</strong> ${p.address || 'Adresse non disponible'}</p>
                   
-                  <div class="flex flex-wrap gap-4 mt-2.5 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                    <span class="flex items-center gap-1.5">
-                      <i class="fa-solid fa-phone text-pink-600"></i> 
-                      ${p.phone ? `<a href="tel:${p.phone}" class="hover:underline font-semibold text-slate-700">${p.phone}</a>` : '<span class="text-slate-400 italic">Téléphone : Non disponible</span>'}
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                      <i class="fa-solid fa-envelope text-pink-600"></i> 
-                      ${p.email ? `<a href="mailto:${p.email}" class="hover:underline text-slate-700">${p.email}</a>` : '<span class="text-slate-400 italic">E-mail : Non disponible</span>'}
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                      <i class="fa-solid fa-globe text-pink-600"></i> 
-                      ${p.website ? `<a href="${p.website}" target="_blank" class="hover:underline text-[#6B125C] font-semibold">Site web</a>` : '<span class="text-slate-400 italic">Site web : Non disponible</span>'}
-                    </span>
+                  <div class="flex flex-wrap items-center gap-2 mt-2 text-[11px] text-slate-500">
+                    <span>📞 <strong>Telephone :</strong> ${p.phone || 'Non disponible'}</span>
+                    <span>•</span>
+                    <span>✉️ <strong>Email :</strong> ${p.email || 'Non disponible'}</span>
+                    <span>•</span>
+                    <a href="${googleMapsUrl}" target="_blank" class="text-[#6B125C] font-bold hover:underline flex items-center gap-1">
+                      <i class="fa-solid fa-map-pin"></i> Itinéraire Google Maps
+                    </a>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <a href="${mapsUrl}" target="_blank" class="px-3 py-1.5 bg-pink-50 text-[#6B125C] hover:bg-pink-100 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-pink-200">
-                    <i class="fa-solid fa-location-dot"></i> Voir la position
-                  </a>
-                  
-				 <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full"> À ${p.distance < 1 ? Math.round(p.distance * 1000) + ' m' : p.distance.toFixed(1) + ' km'}</span>
-
-				</div>
+                <div class="flex flex-col items-end gap-1">
+                  <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200">À ${distanceStr} ${durationStr}</span>
+                </div>
               </div>
 
-              ${hasSearched ? `
-                <div class="flex justify-between items-center bg-pink-50/50 p-3 rounded-xl text-xs border border-pink-100">
-                  <span>Estimation (${this.searchedMedicine}) + Service (5%) : <strong class="text-[#6B125C]">${subTotalWithoutTransport.toLocaleString()} ${currencyLabel}</strong> <span class="text-[10px] text-slate-500">(Hors transport)</span></span>
-                  <button onclick="window.app.addToCart('${this.searchedMedicine.replace(/'/g, "\'")}', ${subTotalWithoutTransport}, '${p.name.replace(/'/g, "\'")}')" class="bg-[#6B125C] text-white px-3.5 py-1.5 rounded-lg font-bold text-xs shadow hover:bg-pink-800 transition">Commander</button>
-                </div>
-              ` : `
-                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-200 text-slate-500">
-                  <span><em>Saisissez un médicament ci-dessus pour afficher le tarif et commander.</em></span>
-                  <button onclick="window.app.tunnelData.step2_pharmacy='${p.name.replace(/'/g, "\'")}'; window.app.setTunnelStep(1);" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-xs transition">Sélectionner</button>
-                </div>
-              `}
+              ${productSectionHTML}
             </div>
           `;
         }).join('');
